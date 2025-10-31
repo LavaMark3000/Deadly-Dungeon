@@ -724,3 +724,55 @@ input[type="text"], input[type="email"]{
   /* F) Slightly tighten title spacing */
   #player-info-header h2{ margin: .2rem 0 .35rem !important; line-height: 1.1 !important; }
 }
+
+
+/* === Mobile hotfix v3: ensure key images are centered, prevent button overlap === */
+@media (max-width: 768px){
+
+  /* Center hero/character/encounter images and keep them inside their boxes */
+  #start-screen img,
+  #character-select-screen img,
+  #encounter-graphic img,
+  .class-image {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Make sure the encounter graphic sits above the dock area and has space */
+  #encounter-graphic{
+    position: relative !important;
+    z-index: 1 !important;
+    margin-bottom: .8rem !important;
+  }
+
+  /* Buttons should never overlay images */
+  #action-buttons, #rps-choices{
+    position: relative !important;
+    z-index: 2 !important;
+    margin-top: .4rem !important;
+    margin-bottom: .4rem !important;
+  }
+
+  /* Footer should sit below everything */
+  .company-credit{
+    position: static !important;
+    z-index: 0 !important;
+    margin-top: .75rem !important;
+  }
+
+  /* Keep the top stats card compact and centered */
+  #player-info-header #player-character-display-area{
+    width: 64px !important;
+    height: 64px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  #player-info-header #player-character-display-area img{
+    max-width: 100% !important;
+    max-height: 100% !important;
+  }
+}
