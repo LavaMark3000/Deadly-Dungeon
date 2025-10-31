@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Deadly Dungeon - Thematic RPS!</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div id="game-container">
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen active">
+      <h1>Deadly Dungeon!</h1>
+      <p id="high-score-start" aria-live="polite" style="margin:0.25rem 0 0.5rem; color:#ffeb3b; font-weight:800;">Best Score: 0</p>
+      <p id="challenge-incoming-message" style="display:none;"></p>
+      <p>Enter your name, brave adventurer:</p>
+      <input type="text" id="player-name-input" placeholder="E.g., Bold Explorer"/>
+      
+      <div id="start-buttons">
+        <button id="how-to-play-button" class="game-button action-button-blue">How to Play</button>
+        <button id="submit-name-button" class="game-button">Start Game</button>
+      </div>
+      
+      <!-- Company info (no 'Deadly Dungeon by' label on start screen) -->
+      <div class="company-info">
+        <p class="company-description">
+          Quest Mentoring uses the engaging power of gaming to promote emotional resilience, essential skills,
+          and work readiness for young people aged 8–24. Discover how our game-based mentoring could help your child thrive.
+        </p>
+        <a id="company-link-start" href="https://www.questmentoring.com" target="_blank">Visit Quest Mentoring</a>
+      </div>
+    </div>
+  <!-- How to Play Screen -->
+  <div id="how-to-play-screen" class="screen">
+    <h2>How to Play</h2>
+    <div id="how-to-play-content">
+      <p>Welcome, adventurer! Here’s how to survive the Deadly Dungeon:</p>
+      <ul>
+        <li><strong>1. Choose Your Class:</strong> Select between <em>Warrior</em>, <em>Rogue</em>, or <em>Mage</em> — each with unique powers and health.</li>
+        <li><strong>2. Enter the Dungeon:</strong> Open doors to face monsters, traps, or treasures.</li>
+        <li><strong>3. Combat:</strong> Use <strong>Rock–Paper–Scissors</strong> to counter your foe’s attacks. Each class has its own themed moves!</li>
+        <li><strong>4. Survive & Collect Treasure:</strong> Beat monsters, disarm traps, and grab gold to increase your final score.</li>
+        <li><strong>5. Escape Alive:</strong> You can exit at any time — but beware, greed can be deadly!</li>
+        <li><strong>6. Boss Fights:</strong> Every few rooms, you’ll face a boss that must be beaten multiple times in a row to progress.</li>
+      </ul>
+    </div>
+    <button id="back-to-start-button" class="game-button action-button-blue">⬅ Back to Start</button>
+        <p class="company-credit">Deadly Dungeon by
+        <a href="https://www.questmentoring.com" target="_blank" id="company-link-start">Quest Mentoring</a>
+      </p>
+</div>
+
+    
+
+    <!-- Character Select Screen -->
+    <div id="character-select-screen" class="screen">
+      <h2>Choose Your Class, <span id="char-select-player-name">Adventurer</span>!</h2>
+      <div id="class-options-container"></div>
+      <p id="class-description">Select a class to see its description.</p>
+      
+      <!-- RPS Preview for Selected Class -->
+      <div id="rps-preview" style="display:none;">
+        <p id="rps-class-text" class="rps-class-text"></p>
+          <div class="rps-preview-grid">
+          <div class="rps-preview-item">
+            <img id="rps-prev-rock" class="rps-preview-image" alt="Rock action preview"/>
+            <div class="rps-preview-caption">Rock</div>
+          </div>
+          <div class="rps-preview-item">
+            <img id="rps-prev-paper" class="rps-preview-image" alt="Paper action preview"/>
+            <div class="rps-preview-caption">Paper</div>
+          </div>
+          <div class="rps-preview-item">
+            <img id="rps-prev-scissors" class="rps-preview-image" alt="Scissors action preview"/>
+            <div class="rps-preview-caption">Scissors</div>
+          </div>
+        </div>
+      </div>
+
+<button id="enter-dungeon-button" class="game-button" style="display:none;">Enter the Dungeon!</button>
+          <p class="company-credit">Deadly Dungeon by
+        <a href="https://www.questmentoring.com" target="_blank" id="company-link-start">Quest Mentoring</a>
+      </p>
+</div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+      <div id="level-banner" aria-live="polite">Dungeon Level 1</div>
+      <div id="player-info-header">
+        <div id="player-name-display">
+          <span id="stat-name">Name: ---</span>
+        </div>
+        <div id="player-details-row">
+          <div id="player-stats-left" class="player-stats-column">
+            <span id="stat-highscore">Best Score: ⭐ 0</span>
+            <span id="stat-class">Class: ---</span>
+            <span id="stat-health">Health: ❤️ ---</span>
+          </div>
+          <div id="player-character-display-area">
+            <img id="player-character-image" src="#" alt="Player Character" style="display:none;"/>
+          </div>
+          <div id="player-stats-right" class="player-stats-column">
+            <span id="stat-treasure">Treasure: 💰 ---</span>
+            <span id="stat-depth">Rooms: 🚪 ---</span>
+            <span id="stat-level">Level: 1</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="dungeon-area">
+        <div id="encounter-graphic"></div>
+        <p id="encounter-message">A mysterious door awaits...</p>
+      </div>
+      <div id="bottom-dock">
+
+
+      <div id="rps-choices">
+        <button class="game-button rps-button" data-choice="rock" aria-label="Rock (R)">
+          <img class="rps-action-image" alt="Rock"/>
+        </button>
+        <button class="game-button rps-button" data-choice="paper" aria-label="Paper (P)">
+          <img class="rps-action-image" alt="Paper"/>
+        </button>
+        <button class="game-button rps-button" data-choice="scissors" aria-label="Scissors (S)">
+          <img class="rps-action-image" alt="Scissors"/>
+        </button>
+      </div>
+
+
+      <div id="action-buttons">
+        <button id="open-door-button" class="game-button action-button-green">Open Door</button>
+        <button id="proceed-deeper-button" class="game-button action-button-green" style="display:none;">Proceed Deeper</button>
+        <button id="exit-dungeon-button" class="game-button action-button-blue">Exit Dungeon</button>
+      </div>
+      </div>
+
+
+      <!-- Keyboard Help Overlay -->
+      <div id="key-help" role="note" aria-live="polite" style="display:none;">
+        <span class="kbd">R</span> Rock • <span class="kbd">P</span> Paper • <span class="kbd">S</span> Scissors
+      </div>
+          <p class="company-credit">Deadly Dungeon by
+        <a href="https://www.questmentoring.com" target="_blank" id="company-link-start">Quest Mentoring</a>
+      </p>
+</div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="screen">
+      <h2 id="game-over-title">Game Over.</h2>
+      <p id="final-score-message">Your score: 0</p>
+      <p id="final-high-score" style="font-weight:800; color:#ffeb3b; margin-top:0.25rem;">Best Score: 0</p>
+      <p id="final-high-score-badge" style="display:none; color:#32CD32; font-weight:900;">🎉 New High Score!</p>
+      <div id="game-over-graphic"></div>
+
+      <div id="game-over-actions-wrapper">
+<div id="player-feedback-section" class="game-over-action-panel">
+          <h3 class="panel-title">Player Feedback</h3>
+          <p>We would love to get some feedback on our game and find out some more about you.</p>
+          <button id="player-feedback-button" class="game-button action-button-purple">Click Here</button>
+        </div>
+
+        <div id="challenge-friend-section" class="game-over-action-panel">
+          <h3 class="panel-title">Challenge a friend</h3>
+          <p id="challenge-prompt">
+            Share your score of <span id="challenge-final-score-display">0</span> and challenge friends to beat your escape. Bragging rights await!
+          </p>
+          <button id="copy-challenge-link-button" class="game-button action-button-green">Copy Challenge Link</button>
+          <p id="copy-link-feedback-message" style="display:none;"></p>
+        </div>
+
+        <div id="find-out-more-section" class="game-over-action-panel">
+          <h3 class="panel-title">Find out more</h3>
+          <p>Want to learn more about youth mentoring through gaming then please checkout our website.</p>
+          <button id="find-out-more-button" class="game-button action-button-blue glow-blue">Visit Quest Mentoring</button>
+        </div>
+      </div>
+
+      <button id="play-again-button" class="game-button">Play Again</button>
+          <p class="company-credit">Deadly Dungeon by
+        <a href="https://www.questmentoring.com" target="_blank" id="company-link-start">Quest Mentoring</a>
+      </p>
+</div>
+  </div>
+
+  <!-- Audio -->
+  <audio id="sfx-click" src="audio/sfx/ui/button_click.mp3" preload="auto"></audio>
+  <audio id="sfx-door" src="audio/sfx/ui/door_open.mp3" preload="auto"></audio>
+  <audio id="sfx-stairs" src="audio/sfx/ui/stairs.mp3" preload="auto"></audio>
+  <audio id="sfx-treasure" src="audio/sfx/items/treasure_found.mp3" preload="auto"></audio>
+  <audio id="sfx-trap-appear" src="audio/sfx/encounters/trap_appear.mp3" preload="auto"></audio>
+  <audio id="sfx-trap-trigger" src="audio/sfx/encounters/trap_trigger.mp3" preload="auto"></audio>
+  <audio id="sfx-trap-disarm" src="audio/sfx/encounters/trap_disarm.mp3" preload="auto"></audio>
+  <audio id="sfx-monster-appear" src="audio/sfx/encounters/monster_appear.mp3" preload="auto"></audio>
+  <audio id="sfx-monster-roar" src="audio/sfx/encounters/monster_roar_generic.mp3" preload="auto"></audio>
+  <audio id="sfx-player-hit" src="audio/sfx/combat/player_hit.mp3" preload="auto"></audio>
+  <audio id="sfx-player-win-rps" src="audio/sfx/combat/player_attack_hit.mp3" preload="auto"></audio>
+  <audio id="sfx-draw-rps" src="audio/sfx/combat/player_attack_draw.mp3" preload="auto"></audio>
+  <audio id="sfx-heal" src="audio/sfx/combat/player_heal.mp3" preload="auto"></audio>
+  <audio id="sfx-gameover" src="audio/sfx/game_events/game_over_perish.mp3" preload="auto"></audio>
+  <audio id="sfx-select" src="audio/sfx/ui/class_select.mp3" preload="auto"></audio>
+  <audio id="sfx-celebrate" src="audio/sfx/game_events/game_over_escape.mp3" preload="auto"></audio>
+  <audio id="music-dungeon" src="audio/music/dungeon_theme.mp3" loop preload="auto"></audio>
+
+  <audio id="music-boss" src="audio/music/BossFight.mp3" loop preload="auto"></audio>
+  <script src="script.js"></script>
+
+  <!-- Removed centralized footer
+<footer class="footer-credit">
+    Deadly Dungeon by <a href="https://www.questmentoring.com" target="_blank">Quest Mentoring</a>
+  </footer> -->
+
+</body>
+</html>
