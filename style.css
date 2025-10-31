@@ -661,3 +661,66 @@ input[type="text"], input[type="email"]{
     min-height: 44px; /* tap target */
   }
 }
+
+
+/* === Mobile hotfix v2: scrolling, footer overlap, avatar size, stats overflow === */
+@media (max-width: 768px){
+
+  /* A) Allow full-page scrolling; avoid vertical centering traps */
+  html, body{ height: auto !important; }
+  body{ align-items: flex-start !important; justify-content: flex-start !important; overflow-x: hidden !important; }
+
+  /* B) Let content flow naturally; no sticky dock on mobile (prevents overlaps) */
+  #bottom-dock{
+    position: static !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-bottom: 0 !important;
+    margin-top: .5rem !important;
+  }
+
+  .screen{
+    min-height: auto !important;
+    overflow: visible !important;
+    padding-bottom: 1rem !important;  /* space after buttons */
+  }
+
+  /* C) Footer should not overlay buttons */
+  .company-credit{
+    position: static !important;
+    margin-top: .75rem !important;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* D) Top stats card: keep avatar smaller and bounded to its square */
+  #player-info-header #player-character-display-area{
+    width: 64px !important;
+    height: 64px !important;
+  }
+  #player-info-header #player-character-display-area img{
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  /* E) Prevent right overflow by allowing wrap and shrinking font a touch */
+  #player-info-header .player-stats-column{
+    white-space: normal !important;   /* allow wrapping if needed */
+    font-size: clamp(.88rem, 3.6vw, .96rem) !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Keep the three columns aligned and inside the card */
+  #player-info-header #player-details-row{
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr !important;
+    align-items: center !important;
+    justify-items: center !important;
+    column-gap: .5rem !important;
+  }
+
+  /* F) Slightly tighten title spacing */
+  #player-info-header h2{ margin: .2rem 0 .35rem !important; line-height: 1.1 !important; }
+}
