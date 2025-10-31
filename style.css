@@ -628,141 +628,36 @@ input[type="text"], input[type="email"]{
 }
 
 
-/* === Mobile scroll & viewport fixes === */
-/* On mobile, centering the whole body prevents scrolling to the top.
-   Start content at the top and use dynamic viewport units. */
+/* === Mobile polish: header avatar size, stats no-wrap, bottom buttons visible === */
 @media (max-width: 768px){
-  html, body{
+  /* 1) Smaller class portrait in the top stats card */
+  #player-info-header #player-character-display-area img{
+    height: 56px !important;
+    width: auto !important;
+  }
+
+  /* 3) Prevent Best Score wrapping and slightly reduce font size */
+  #player-info-header .player-stats-column{
+    white-space: nowrap;
+    font-size: clamp(.9rem, 3.8vw, .98rem);
+    line-height: 1.2;
+  }
+
+  /* 2) Ensure bottom action buttons are not clipped */
+  #bottom-dock{
+    position: sticky !important;
+    bottom: 0 !important;
     height: auto !important;
-  }
-  body{
-    align-items: flex-start !important;   /* don't vertically center page on mobile */
-    justify-content: flex-start !important;
-    overflow-x: hidden;
-  }
-  #game-container{
-    min-height: 100svh;                   /* fill screen including mobile browser UI */
-    margin-top: 0 !important;
-  }
-}
-
-/* Fallback for browsers without svh support */
-@supports not (height: 100svh){
-  @media (max-width: 768px){
-    #game-container{ min-height: 100vh; }
-  }
-}
-
-
-/* === Robust vertical centering v4 (more specific & !important) === */
-#player-info-header #player-details-row{
-  display: grid !important;
-  grid-template-columns: 1fr auto 1fr !important;
-  align-items: center !important;   /* vertical centering for all three cells */
-  justify-items: center !important;
-  min-height: 96px;                 /* gives room to center around the avatar */
-}
-
-#player-info-header .player-stats-column{
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;  /* center content within each side column */
-  align-items: flex-start;              /* left col default; right col overridden below */
-  gap: 0.25rem !important;
-}
-
-#player-stats-right{
-  align-items: flex-end !important;
-  text-align: right !important;
-}
-
-#player-info-header #player-character-display-area{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-#player-info-header #player-character-display-area img{
-  height: 72px;
-  width: auto;
-  object-fit: contain;
-}
-
-#player-info-header h2{
-  margin: 0.2rem 0 0.4rem !important;
-  line-height: 1.15 !important;
-}
-
-#player-info-header{
-  padding-top: 0.4rem !important;
-  padding-bottom: 0.6rem !important;
-}
-
-
-/* === Mobile Optimizations === */
-:root{
-  --tap-min: 44px; /* minimum tap target size per mobile guidelines */
-}
-
-*{ -webkit-tap-highlight-color: transparent; }
-
-html{ height: -webkit-fill-available; }
-
-/* Make the page start at the top on mobile; allow natural scroll */
-@media (max-width: 768px){
-  html, body{ height: auto !important; }
-  body{
-    align-items: flex-start !important;
-    justify-content: flex-start !important;
-    overflow-x: hidden;
-    padding: 0;
-  }
-  #game-container{
-    width: 100vw !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    min-height: 100svh !important;
+    overflow: visible !important;
+    padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
   }
   .screen{
-    min-height: 100svh;
-    overflow-y: auto;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    padding-bottom: max(84px, env(safe-area-inset-bottom)) !important; /* leave room for buttons */
   }
-  /* tighter panels, headings */
-  h1{ font-size: clamp(1.5rem, 6vw, 2rem); }
-  h2{ font-size: clamp(1.2rem, 5.2vw, 1.6rem); }
-  p{  font-size: clamp(.95rem, 4.2vw, 1rem); }
-  #player-info-header{ padding: .6rem .6rem !important; }
-  #player-details-row{ gap: .4rem !important; }
-  #player-character-display-area img{ height: 64px !important; }
-  /* Tap targets */
-  .game-button,
-  .class-option,
-  .rps-button{
-    min-width: var(--tap-min);
-    min-height: var(--tap-min);
-    touch-action: manipulation; /* remove 300ms delay */
+  #action-buttons, #rps-choices{
+    margin-bottom: .25rem !important;
   }
-  .class-option{ width: 42vw; }
-  .rps-button{ width: clamp(64px, 28vw, 120px); height: clamp(64px, 28vw, 120px); }
-  #bottom-dock{
-    position: sticky;
-    bottom: 0;
-    height: auto;
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
-    backdrop-filter: none;
-    background: transparent;
+  .game-button{
+    min-height: 44px; /* tap target */
   }
-}
-/* Fallback if svh not supported */
-@supports not (height: 100svh){
-  @media (max-width: 768px){
-    #game-container{ min-height: 100vh !important; }
-    .screen{ min-height: 100vh !important; }
-  }
-}
-
-/* Respect reduced motion to avoid jank on low-end devices */
-@media (prefers-reduced-motion: reduce){
-  *{ animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; scroll-behavior: auto !important; }
 }

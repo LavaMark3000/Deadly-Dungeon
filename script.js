@@ -1,27 +1,3 @@
-
-// === Mobile: unlock audio on first interaction & use passive listeners ===
-(function(){
-  let unlocked = false;
-  function unlockAudioOnce(){
-    if(unlocked) return;
-    unlocked = true;
-    try{
-      const el = document.getElementById('sfx-click') || document.querySelector('audio');
-      if(el){
-        const wasMuted = el.muted;
-        el.muted = true;
-        const p = el.play();
-        if(p && p.catch){ p.catch(()=>{}).finally(()=>{ el.pause(); el.currentTime = 0; el.muted = wasMuted; }); }
-        else { el.pause(); el.currentTime = 0; el.muted = wasMuted; }
-      }
-    }catch(e){ /* ignore */ }
-  }
-  const opts = {passive:true};
-  window.addEventListener('touchstart', unlockAudioOnce, opts);
-  window.addEventListener('pointerdown', unlockAudioOnce, opts);
-  window.addEventListener('keydown', unlockAudioOnce, opts);
-})();
-
 document.addEventListener('DOMContentLoaded', () => {
   // Elements
   const startScreen = document.getElementById('start-screen');
