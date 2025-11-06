@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const startHS = document.getElementById('high-score-start');
     if (startHS){ startHS.textContent = `Best Score: ${hs}`; }
     const statHS = document.getElementById('stat-highscore');
-    if (statHS){ statHS.textContent = `Best Score: ⭐ ${hs}`; }
+    if (statHS){ statHS.textContent = `${hs}`; }
   }
 
 
@@ -399,7 +399,7 @@ function fadeOutAudio(audio, durationMs){
     const lvl = getDungeonLevel();
     levelBanner.textContent = `Dungeon Level ${lvl}`;
     lastDisplayedLevel = lvl;
-    try{ document.getElementById('stat-level').textContent = `Level: ${lvl}`; }catch(_e){}
+    try{ document.getElementById('stat-level').textContent = `${lvl}`; }catch(_e){}
   }
 
   function initializeGameAndStart(){
@@ -449,10 +449,10 @@ function fadeOutAudio(audio, durationMs){
   function updatePlayerStats(){
     updateHighScoreDisplays(); // refresh HS in header
     document.getElementById('stat-name').textContent = `${playerName}`;
-    document.getElementById('stat-class').textContent = `Class: ${playerClass ? playerClass.emojiIcon : '---'}`;
-    document.getElementById('stat-health').textContent = `Health: ❤️ ${playerHealth}/${playerMaxHealth}`;
-    document.getElementById('stat-treasure').textContent = `Treasure: 💰 ${currentTreasure}`;
-    document.getElementById('stat-depth').textContent = `Rooms: 🚪 ${currentDepth}`;
+    document.getElementById('stat-class').textContent = playerClass ? playerClass.name : '';
+    document.getElementById('stat-health').textContent = `${playerHealth}`;
+    document.getElementById('stat-treasure').textContent = `${currentTreasure}`;
+    document.getElementById('stat-depth').textContent = `${currentDepth}`;
     if (playerClass && playerClass.imagePath){
       playerCharacterImageEl.src = playerClass.imagePath;
       playerCharacterImageEl.alt = playerClass.name;
@@ -1037,7 +1037,7 @@ url.searchParams.set('from', fromName);
     const scoreDecoded = decodeCodeToScore(codeParam, fromParam);
     if (scoreDecoded !== null && Number.isFinite(scoreDecoded) && scoreDecoded >= 0){
       const namePart = fromParam ? `${fromParam} has ` : "Someone has ";
-      challengeIncomingMessageEl.textContent = `${namePart}challenged you to beat a score of ${scoreDecoded}!`;
+      challengeIncomingMessageEl.textContent = `${namePart}challenged you to beat a score of ${scoreDecoded}`;
       challengeIncomingMessageEl.style.display = 'block';
     } else {
       challengeIncomingMessageEl.textContent = "Unverified challenge link — score hidden.";

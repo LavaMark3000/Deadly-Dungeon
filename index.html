@@ -92,18 +92,36 @@
         </div>
         <div id="player-details-row">
           <div id="player-stats-left" class="player-stats-column">
-            <span id="stat-highscore">Best Score: ⭐ 0</span>
-            <span id="stat-class">Class: ---</span>
-            <span id="stat-health">Health: ❤️ ---</span>
-          </div>
+  <div class="stat-item" title="Best Score">
+    <img src="images/ui/bestscore.png" alt="Best Score" class="stat-icon"/>
+    <span id="stat-highscore">0</span>
+  </div>
+  <div class="stat-item" title="Class">
+    <img src="images/ui/class.png" alt="Class" class="stat-icon"/>
+    <span id="stat-class"></span>
+  </div>
+  <div class="stat-item" title="Health">
+    <img src="images/ui/health.png" alt="Health" class="stat-icon"/>
+    <span id="stat-health">0/0</span>
+  </div>
+</div>
           <div id="player-character-display-area">
             <img id="player-character-image" src="#" alt="Player Character" style="display:none;"/>
           </div>
           <div id="player-stats-right" class="player-stats-column">
-            <span id="stat-treasure">Treasure: 💰 ---</span>
-            <span id="stat-depth">Rooms: 🚪 ---</span>
-            <span id="stat-level">Level: 1</span>
-          </div>
+  <div class="stat-item" title="Treasure">
+  <span id="stat-treasure">0</span>
+  <img src="images/ui/treasure.png" alt="Treasure" class="stat-icon"/>
+</div>
+  <div class="stat-item" title="Rooms">
+  <span id="stat-depth">0</span>
+  <img src="images/ui/rooms.png" alt="Rooms" class="stat-icon"/>
+</div>
+  <div class="stat-item" title="Level">
+  <span id="stat-level">1</span>
+  <img src="images/ui/level.png" alt="Level" class="stat-icon"/>
+</div>
+</div>
         </div>
       </div>
 
