@@ -50,6 +50,99 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   const musicDungeon = document.getElementById('music-dungeon');
   const musicBoss = document.getElementById('music-boss');
+  // === Obfuscated Challenge Code (client-side deterrent) ===
+
+  // === Post-encoding letter-mapping (digits -> letters) ===
+  // Replace numeric digits in the compact code with letters to make codes look alphabetic.
+  const DIGIT_TO_LETTER = { '0':'K','1':'L','2':'M','3':'N','4':'O','5':'P','6':'Q','7':'R','8':'S','9':'T' };
+  const LETTER_TO_DIGIT = Object.fromEntries(Object.entries(DIGIT_TO_LETTER).map(([k,v])=>[v,k]));
+
+  function encodeDigitsToLetters(s){
+    if (!s) return s;
+    return String(s).split('').map(ch => DIGIT_TO_LETTER[ch] || ch).join('');
+  }
+  function decodeLettersToDigits(s){
+    if (!s) return s;
+    return String(s).split('').map(ch => LETTER_TO_DIGIT[ch] || ch).join('');
+  }
+
+  // This uses a modular linear transform with a per-name mask so the 'code' in the URL
+  // looks opaque. It's reversible in JS using modular inverse. This is only a deterrent.
+  const OB_MOD = 1000000007n; // prime modulus
+  const OB_MULT = 1299827n;   // multiplier (must be coprime with OB_MOD)
+  const OB_ADD = 764321n;     // additive offset
+
+  // Compute modular inverse of OB_MULT (Fermat since OB_MOD is prime)
+  function modPow(base, exp, mod){
+    base = base % mod;
+    let result = 1n;
+    while(exp > 0n){
+      if (exp & 1n) result = (result * base) % mod;
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+  const OB_MULT_INV = modPow(OB_MULT, OB_MOD - 2n, OB_MOD);
+
+  const OB_PEPPER = 0x5a3c7f1d; // small numeric pepper (visible in bundle)
+
+  function nameSum(name){
+    if (!name) return 0n;
+    let s = 0n;
+    for (let i = 0; i < name.length; i++) s += BigInt(name.charCodeAt(i));
+    return s;
+  }
+
+  // Encode score and name into a short base36 code
+  function encodeScoreToCode(score, name){
+    const s = BigInt(Math.max(0, Math.floor(Number(score)||0)));
+    const nsum = nameSum(String(name || ''));
+    const seed = ( (s * OB_MULT) + OB_ADD + nsum ) % OB_MOD; // linear transform
+    const mask = (nsum * 12345n + BigInt(OB_PEPPER)) % OB_MOD; // name-derived mask
+    const ob = seed ^ mask; // XOR (BigInt)
+    return encodeDigitsToLetters(ob.toString(36)); // compact base36 string
+  }
+
+  // Decode code back to score using the name
+  function decodeCodeToScore(code, name){
+    try {
+      if (!code) return null;
+      // first map letters back to digits
+      const normalized = decodeLettersToDigits(String(code));
+      const ob = BigInt(parseInt(String(normalized), 36)); // parse base36 into Number then BigInt (safe for our ranges)
+      const nsum = nameSum(String(name || ''));
+      const mask = (nsum * 12345n + BigInt(OB_PEPPER)) % OB_MOD;
+      const seed = ob ^ mask;
+      // invert linear transform: score = (seed - OB_ADD - nsum) * OB_MULT_INV mod OB_MOD
+      let val = (seed - OB_ADD - nsum) % OB_MOD;
+      if (val < 0n) val += OB_MOD;
+      const s = (val * OB_MULT_INV) % OB_MOD;
+      return Number(s); // final score as Number
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // === Challenge Link Integrity (Option B: client-side checksum) ===
+  // NOTE: This is a deterrent only. The pepper is bundled and can be discovered.
+  const CHALLENGE_PEPPER = 'dd_v1_pepper_F7b2xK1Q';
+  function base64urlFromBytes(bytes){
+    let bin = '';
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    let b64 = btoa(bin);
+    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/,'');
+  }
+  async function sha256Base64Url(str){
+    const data = new TextEncoder().encode(str);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return base64urlFromBytes(new Uint8Array(hash));
+  }
+  async function signChallenge(score, fromName){
+    const payload = `${'${'}score}${'|'}${'${'}fromName}${'|'}${'${'}CHALLENGE_PEPPER}${''}`;
+    return await sha256Base64Url(payload);
+  }
+
   // High score localStorage
   const HIGH_SCORE_KEY = 'dd_high_score';
   function loadHighScore(){
@@ -76,7 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const ACTION_IMAGE_BLANK_DELAY_MS = 100;
   const RPS_FINAL_LINGER_MS = 200;const BORDER_COLORS = ['#FF6347','#32CD32','#1E90FF','#FFD700','#DA70D6'];
   const MAX_SEQUENCE_LENGTH = 8;
-  const ROOMS_PER_LEVEL = 7; // boss is the 7th room
+  const ROOMS_PER_LEVEL = 5;
+  // boss is the 5th room (4 encounters before the boss)
   const BOSS_INTRO_DELAY_MS = 2500; // keep boss intro text visible before actions
   const BOSS_REWARD_MULTIPLIER = 3; // bosses drop more treasure
 
@@ -119,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { name:"Cave Bat", imagePath:"images/monsters/cave_bat.png", baseDamageMin:2, baseDamageMax:5, depthDamageFactor:0.8, monsterClass:'rogue' },
     { name:"Zombie", imagePath:"images/monsters/zombie.png", baseDamageMin:6, baseDamageMax:10, depthDamageFactor:1.2, monsterClass:'warrior' },
     { name:"Restless Ghost", imagePath:"images/monsters/restless_ghost.png", baseDamageMin:4, baseDamageMax:7, depthDamageFactor:1, monsterClass:'mage' },
-    { name:"Impish Demon", imagePath:"images/monsters/Impish_demon.png", baseDamageMin:7, baseDamageMax:12, depthDamageFactor:1.5, monsterClass:'mage' },
+    { name:"Impish Demon", imagePath:"images/monsters/impish_demon.png", baseDamageMin:7, baseDamageMax:12, depthDamageFactor:1.5, monsterClass:'mage' },
     { name:"Young Dragon", imagePath:"images/monsters/young_dragon.png", baseDamageMin:10, baseDamageMax:15, depthDamageFactor:2, monsterClass:'warrior' },
     { name:"Dire Wolf", imagePath:"images/monsters/dire_wolf.png", baseDamageMin:5, baseDamageMax:9, depthDamageFactor:1.1, monsterClass:'warrior' },
   { name:"Manticore", imagePath:"images/monsters/manticore.png", baseDamageMin:8,  baseDamageMax:13, depthDamageFactor:1.4, monsterClass:"rogue",  flavor:"Its barbed tail rattles as it circles." },
@@ -131,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
   { name:"Lizardman", imagePath:"images/monsters/lizardman.png", baseDamageMin:4,  baseDamageMax:8,  depthDamageFactor:1.1, monsterClass:"warrior", flavor:"A spear-wielding raider flicks its tongue." },
   { name:"Troll", imagePath:"images/monsters/troll.png", baseDamageMin:5, baseDamageMax:9, depthDamageFactor:1.2, monsterClass:"warrior", flavor:"A foul roar echoes through the corridor." },
   { name:"Wraith", imagePath:"images/monsters/wraith.png", baseDamageMin:4, baseDamageMax:10, depthDamageFactor:1.3, monsterClass:"mage", flavor:"The air turns thin and icy as it drifts closer." },
-  { name:"Minotaur", imagePath:"images/monsters/Minotaur.png", baseDamageMin:10, baseDamageMax:16, depthDamageFactor:1.9, monsterClass:"warrior", flavor:"The ground shakes with each thunderous hoofbeat." },
+  { name:"Minotaur", imagePath:"images/monsters/minotaur.png", baseDamageMin:10, baseDamageMax:16, depthDamageFactor:1.9, monsterClass:"warrior", flavor:"The ground shakes with each thunderous hoofbeat." },
   { name:"Ogre", imagePath:"images/monsters/ogre.png", baseDamageMin:8, baseDamageMax:13, depthDamageFactor:1.5, monsterClass:"warrior", flavor:"It hefts a massive club with terrifying ease." },
   { name:"Orc", imagePath:"images/monsters/orc.png", baseDamageMin:5, baseDamageMax:10, depthDamageFactor:1.2, monsterClass:"rogue", flavor:"It snarls and beats its chest, eager for a fight." },
   { name:"Snake", imagePath:"images/monsters/snake.png", baseDamageMin:2, baseDamageMax:5, depthDamageFactor:0.8, monsterClass:"rogue", flavor:"It coils and strikes with lightning speed." }
@@ -212,12 +306,40 @@ function getMonstersForLevel(level){
   function hideBoth(){
     if (rpsChoicesDiv){ rpsChoicesDiv.classList.add('is-hidden'); rpsChoicesDiv.classList.remove('is-visible'); }
     if (actionButtons){ actionButtons.classList.add('is-hidden'); actionButtons.classList.remove('is-visible'); }
+    markRpsReady(false);
+  }
+
+  // Add or remove a subtle glow to indicate inputs are ready
+  function markRpsReady(on){
+    try{ rpsButtons.forEach(btn => btn.classList.toggle('rps-ready', !!on)); }catch(_e){}
   }
 
 
   // Helpers
   function playSound(s){ if (s && s.play){ s.currentTime = 0; const p = s.play(); if (p) p.catch(()=>{}); } }
   function stopMusic(m){ if (m && !m.paused){ m.pause(); m.currentTime = 0; } }
+// Smoothly fade an <audio> element, then pause and reset.
+function fadeOutAudio(audio, durationMs){
+  try{
+    if (!audio) return;
+    const startVol = (typeof audio.volume === 'number') ? audio.volume : 1.0;
+    const steps = 12;
+    const stepTime = Math.max(20, Math.floor((durationMs||800)/steps));
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      const ratio = Math.max(0, 1 - i/steps);
+      try{ audio.volume = startVol * ratio; }catch(_e){}
+      if (i>=steps){
+        clearInterval(id);
+        try{ audio.pause(); }catch(_e){}
+        try{ audio.currentTime = 0; }catch(_e){}
+        try{ audio.volume = startVol; }catch(_e){}
+      }
+    }, stepTime);
+  }catch(_e){}
+}
+
   function getDungeonLevel(){ return dungeonLevel; }
   function isBossRoom(){ return currentDepth > 0 && (currentDepth % ROOMS_PER_LEVEL === 0); }
   function getSymbolCountForLevel(level){ return Math.min(level, MAX_SEQUENCE_LENGTH); }
@@ -521,12 +643,14 @@ function getMonstersForLevel(level){
       encounterGraphic.innerHTML = `<img src="${currentRpsContext.opponentData.imagePath}" alt="${currentRpsContext.opponentData.name}" class="encounter-image">`;
       encounterMessage.innerHTML = `Your turn! Counter their sequence (${currentRpsContext.playerCurrentSequenceStep + 1}/${currentRpsContext.opponentActionSequence.length}).`;
       rpsButtons.forEach(btn => btn.disabled = false);
+          markRpsReady(true);
     }, ACTION_IMAGE_BLANK_DELAY_MS + RPS_FINAL_LINGER_MS);
       }
     }, timePerCycle);
   }
 
   function handleRPSChoice(playerChoice){
+    markRpsReady(false);
     if (!currentRpsContext.active || currentRpsContext.playerCurrentSequenceStep >= currentRpsContext.opponentActionSequence.length) return;
     playSound(sfx.click);
     rpsButtons.forEach(b => b.disabled = true);
@@ -556,6 +680,7 @@ try{
         } else {
           encounterMessage.innerHTML = `SUCCESSFUL COUNTER! Next move (${currentRpsContext.playerCurrentSequenceStep + 1}/${currentRpsContext.opponentActionSequence.length}).`;
           rpsButtons.forEach(btn => btn.disabled = false);
+          markRpsReady(true);
         }
       } else {
         playSound(sfx.monsterRoar); playSound(sfx.playerHit);
@@ -568,8 +693,10 @@ try{
         currentRpsContext.playerCurrentSequenceStep++;
         if (currentRpsContext.playerCurrentSequenceStep === currentRpsContext.opponentActionSequence.length){
           playSound(sfx.trapDisarm);
-          let msg = `CLEVER! You disarmed the ${currentRpsContext.opponentData.name}.`;
-          if (playerClass.id === 'rogue'){
+          const baseGold = Math.floor((Math.random()*(15 + currentDepth*3) + (10 + currentDepth)) * 0.5);
+          currentTreasure += baseGold; playSound(sfx.treasure);
+          let msg = `CLEVER! You disarmed the ${currentRpsContext.opponentData.name} and recover ${baseGold} gold.`;
+          if (playerClass && playerClass.id === 'rogue'){
             const rogueGold = Math.floor(Math.random()*(10 + currentDepth*2)) + (10 + currentDepth*2);
             currentTreasure += rogueGold; playSound(sfx.treasure);
             msg += ` As a Rogue, you pocket an extra ${rogueGold} gold!`;
@@ -579,6 +706,7 @@ try{
         } else {
           encounterMessage.innerHTML = `Careful... Next step to disarm (${currentRpsContext.playerCurrentSequenceStep + 1}/${currentRpsContext.opponentActionSequence.length}).`;
           rpsButtons.forEach(btn => btn.disabled = false);
+          markRpsReady(true);
         }
       } else {
         playSound(sfx.trapTrigger);
@@ -644,6 +772,7 @@ try{
         } else {
           encounterMessage.innerHTML = `Good hit! Next move (${currentRpsContext.playerCurrentSequenceStep + 1}/${currentRpsContext.opponentActionSequence.length}).`;
           rpsButtons.forEach(btn => btn.disabled = false);
+          markRpsReady(true);
         }
       } else {
         playSound(sfx.monsterRoar); playSound(sfx.playerHit);
@@ -724,8 +853,8 @@ try{
       showActionButtons();
       if (opts.showStairs){
       /*__BOSS_MUSIC_END_ON_STAIRS__*/
-      try{ if (musicBoss) stopMusic(musicBoss); }catch(_e){}
-      try{ if (musicDungeon){ musicDungeon.volume = 0.3; const _p = musicDungeon.play(); if (_p) _p.catch(()=>{}); } }catch(_e){}
+      try{ if (musicBoss) fadeOutAudio(musicBoss, 1000); }catch(_e){}
+      try{ setTimeout(() => { if (musicDungeon){ musicDungeon.volume = 0.3; const _p = musicDungeon.play(); if (_p) _p.catch(()=>{}); } }, 1000); }catch(_e){}
       /*__BOSS_MUSIC_END_ON_STAIRS_END__*/
         proceedDeeperButton.style.display = 'none';
         exitDungeonButton.style.display = 'inline-block';
@@ -803,31 +932,37 @@ if (findOutMoreButton){
   }
 );
 }
-  if (copyChallengeLinkButton){
+  
+
+if (copyChallengeLinkButton){
   copyChallengeLinkButton.addEventListener('click', async () => {
-    let url;
     try{
-      url = new URL(window.location.href);
-      // Always point to the main game page
+      const score = lastFinalScore || 0;
+      const fromName = playerName || 'A friend';
+      const code = encodeScoreToCode(score, fromName);
+
+      let url = new URL(window.location.href);
       url.pathname = url.pathname.replace(/[^\/]*$/, 'index.html');
-      url.searchParams.set('score', String(lastFinalScore || 0));
-      url.searchParams.set('from', encodeURIComponent(playerName || 'A friend'));
+      url.search = '';
+      // Use code (obfuscated) and include from so recipient sees sender's name.
+      url.search = '?' + encodeURIComponent(code) + '&from=' + encodeURIComponent(fromName);
+url.searchParams.set('from', fromName);
+
       await navigator.clipboard.writeText(url.toString());
       if (copyLinkFeedbackMessageEl){
         copyLinkFeedbackMessageEl.textContent = "Challenge link copied! Share it with a friend.";
         copyLinkFeedbackMessageEl.style.display = 'block';
       }
     } catch(e){
-      if (!url){
-        try{ url = new URL(window.location.origin + "/index.html"); }catch(_){}
-      }
       if (copyLinkFeedbackMessageEl){
-        copyLinkFeedbackMessageEl.textContent = "Couldn't copy automatically. Long-press and copy this link: " + (url ? url.toString() : window.location.href);
+        copyLinkFeedbackMessageEl.textContent = "Couldn't copy automatically. Try again.";
         copyLinkFeedbackMessageEl.style.display = 'block';
       }
     }
   });
 }
+
+
 
   if (goToQuestionsButton){ goToQuestionsButton.addEventListener('click', () => { window.location.href = 'questions.html'; }); }
 
@@ -888,19 +1023,25 @@ if (findOutMoreButton){
   const backToStartBtn = document.getElementById('back-to-start-button');
   if (howToPlayBtn){ howToPlayBtn.addEventListener('click', () => { playSound(sfx.click); switchScreen(document.getElementById('how-to-play-screen')); }); }
   if (backToStartBtn){ backToStartBtn.addEventListener('click', () => { playSound(sfx.click); switchScreen(document.getElementById('start-screen')); }); }
-// If someone opened a challenge link (?score=123&from=Name), surface that on the start screen
-(function(){
+// If someone opened a challenge link (?code=XYZ&from=Name),
+// decode the obfuscated code and display the score if plausible (deterrent only)
+(async function(){
   try{
     const params = new URLSearchParams(window.location.search);
-    const scoreParam = params.get('score');
-    const challenger = params.get('from');
-    if (scoreParam && challengeIncomingMessageEl){
-      const scoreNum = parseInt(scoreParam, 10);
-      if (!isNaN(scoreNum)){
-        const namePart = challenger ? `${decodeURIComponent(challenger)} has ` : "Someone has ";
-        challengeIncomingMessageEl.textContent = `${namePart}challenged you to beat a score of ${scoreNum}!`;
-        challengeIncomingMessageEl.style.display = 'block';
-      }
+    const rawSearch = window.location.search.substring(1);
+    const firstPart = rawSearch.split('&')[0] || '';
+    const codeParam = firstPart ? decodeURIComponent(firstPart) : null;
+    const fromParam = params.get('from');
+    if (!codeParam || !fromParam || !challengeIncomingMessageEl) return;
+
+    const scoreDecoded = decodeCodeToScore(codeParam, fromParam);
+    if (scoreDecoded !== null && Number.isFinite(scoreDecoded) && scoreDecoded >= 0){
+      const namePart = fromParam ? `${fromParam} has ` : "Someone has ";
+      challengeIncomingMessageEl.textContent = `${namePart}challenged you to beat a score of ${scoreDecoded}!`;
+      challengeIncomingMessageEl.style.display = 'block';
+    } else {
+      challengeIncomingMessageEl.textContent = "Unverified challenge link — score hidden.";
+      challengeIncomingMessageEl.style.display = 'block';
     }
   }catch(_e){ /* no-op */ }
 })();
