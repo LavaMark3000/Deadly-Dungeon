@@ -631,7 +631,7 @@ function fadeOutAudio(audio, durationMs){
           const action = currentRpsContext.opponentActionSequence[currentRpsContext.opponentSequenceDisplayIndex];
           const border = BORDER_COLORS[currentRpsContext.opponentSequenceDisplayIndex % BORDER_COLORS.length];
           const cls = currentRpsContext.opponentClass || 'warrior';
-          encounterGraphic.innerHTML = `<img src="${CLASS_RPS_IMAGES[cls][action]}" alt="Opponent Action" class="encounter-image" style="border:3px solid ${border}; box-sizing:border-box; border-radius:10px;">`;
+          encounterGraphic.innerHTML = `<img src="${CLASS_RPS_IMAGES[cls][action]}" alt="Opponent Action" class="encounter-image encounter-action" style="border:3px solid ${border}; box-sizing:border-box; border-radius:10px;">`;
           encounterMessage.textContent = `Opponent's Move ${currentRpsContext.opponentSequenceDisplayIndex + 1} / ${currentRpsContext.opponentActionSequence.length}`;
           currentRpsContext.opponentSequenceDisplayIndex++;
         }, ACTION_IMAGE_BLANK_DELAY_MS);
@@ -754,9 +754,8 @@ try{
                   encWrap.classList.remove('boss-defeated','defeated'); // clear overlays
                 }
               }catch(_e){}
-              const lvl = getDungeonLevel();
-              if (lvl >= 10){ endGame(true, {victoryDungeon:true}); }
-              else { stairsAvailable = true; finalizeCombatSequence(true, {showStairs:true}); }
+              stairsAvailable = true;
+              finalizeCombatSequence(true, {showStairs:true});
             }, 2000);
             }, 1000);
           } else {
@@ -877,7 +876,7 @@ try{
     endGame(true);
   }
 
-  function endGame(isSafeExit, opts={}){
+  function endGame(isSafeExit){
     if (currentRpsContext.opponentSequenceDisplayInterval){
       clearInterval(currentRpsContext.opponentSequenceDisplayInterval);
       currentRpsContext.opponentSequenceDisplayInterval = null;
@@ -893,17 +892,10 @@ try{
 
     if (isSafeExit){
       finalScore = currentTreasure;
-      if (opts && opts.victoryDungeon){
-        titleEl.textContent = "You Beat the Dungeon!";
-        msgEl.innerHTML = `You defeated the <strong>Level 10 Boss</strong> and cleared the dungeon!<br>`+
-          `You escaped with ${currentTreasure} gold.<br>Your final score is ${finalScore}.`;
-        gameOverGraphic.innerHTML = `<img src="${STATIC_IMAGES.gameOverEscaped}" alt="Dungeon Cleared!" class="game-over-image">`;
-      } else {
-        titleEl.textContent = "You Escaped!";
-        msgEl.innerHTML = `You bravely exited <strong>Dungeon Level ${getDungeonLevel()}</strong> and kept all ${currentTreasure} gold!<br>Your final score is ${finalScore}.`;
-        gameOverGraphic.innerHTML = `<img src="${STATIC_IMAGES.gameOverEscaped}" alt="Escaped Safely!" class="game-over-image">`;
-      }
-} else {
+      titleEl.textContent = "You Beat the Dungeon!";
+      msgEl.innerHTML = `You bravely exited <strong>Dungeon Level ${dungeonLevel}</strong> after ${currentDepth} rooms with ${currentTreasure} gold!<br>Your final score is ${finalScore}.`;
+      gameOverGraphic.innerHTML = `<img src="${STATIC_IMAGES.gameOverEscaped}" alt="Escaped Safely!" class="game-over-image">`;
+    } else {
       finalScore = 0;
       const goldLost = currentTreasure;
       titleEl.textContent = "You Have Perished!";
