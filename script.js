@@ -172,14 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const ROOMS_PER_LEVEL = 5;
   // boss is the 5th room (4 encounters before the boss)
   const BOSS_INTRO_DELAY_MS = 2500; // keep boss intro text visible before actions
-  const BOSS_REWARD_MULTIPLIER = 3;
-
-// === Custom boss class mapping for levels 1-10 ===
-const BOSS_CLASSES = {
-  1:'warrior', 2:'rogue', 3:'warrior', 4:'mage', 5:'mage',
-  6:'warrior', 7:'mage', 8:'rogue', 9:'warrior', 10:'rogue'
-};
- // bosses drop more treasure
+  const BOSS_REWARD_MULTIPLIER = 3; // bosses drop more treasure
 
   // Data
   const CLASS_RPS_LABELS = {
@@ -230,41 +223,26 @@ const BOSS_CLASSES = {
   { name:"Golem", imagePath:"images/monsters/golem.png", baseDamageMin:6,  baseDamageMax:11, depthDamageFactor:1.6, monsterClass:"warrior", flavor:"Stone grinds as it lumbers forward." },
   { name:"Lizard", imagePath:"images/monsters/lizard.png", baseDamageMin:2,  baseDamageMax:6,  depthDamageFactor:0.9, monsterClass:"rogue",  flavor:"It darts side to side with a hiss." },
   { name:"Lizardman", imagePath:"images/monsters/lizardman.png", baseDamageMin:4,  baseDamageMax:8,  depthDamageFactor:1.1, monsterClass:"warrior", flavor:"A spear-wielding raider flicks its tongue." },
-  { name:"Troll", imagePath:"images/monsters/troll.png", baseDamageMin:5, baseDamageMax:9, depthDamageFactor:1.2, monsterClass:"rogue", flavor:"A foul roar echoes through the corridor." },
+  { name:"Troll", imagePath:"images/monsters/troll.png", baseDamageMin:5, baseDamageMax:9, depthDamageFactor:1.2, monsterClass:"warrior", flavor:"A foul roar echoes through the corridor." },
   { name:"Wraith", imagePath:"images/monsters/wraith.png", baseDamageMin:4, baseDamageMax:10, depthDamageFactor:1.3, monsterClass:"mage", flavor:"The air turns thin and icy as it drifts closer." },
   { name:"Minotaur", imagePath:"images/monsters/minotaur.png", baseDamageMin:10, baseDamageMax:16, depthDamageFactor:1.9, monsterClass:"warrior", flavor:"The ground shakes with each thunderous hoofbeat." },
   { name:"Ogre", imagePath:"images/monsters/ogre.png", baseDamageMin:8, baseDamageMax:13, depthDamageFactor:1.5, monsterClass:"warrior", flavor:"It hefts a massive club with terrifying ease." },
-  { name:"Orc", imagePath:"images/monsters/orc.png", baseDamageMin:5, baseDamageMax:10, depthDamageFactor:1.2, monsterClass:"warrior", flavor:"It snarls and beats its chest, eager for a fight." },
-  { name:"Snake", imagePath:"images/monsters/snake.png", baseDamageMin:2, baseDamageMax:5, depthDamageFactor:0.8, monsterClass:"rogue", flavor:"It coils and strikes with lightning speed." },
-  { name:"Goblin Shamen", imagePath:"images/monsters/goblin_shamen.png", baseDamageMin:5, baseDamageMax:9, depthDamageFactor:1.2, monsterClass:"mage" },
-  { name:"Silent Fang", imagePath:"images/monsters/silent_fang.png", baseDamageMin:6, baseDamageMax:10, depthDamageFactor:1.3, monsterClass:"rogue" },
-  { name:"Mimic", imagePath:"images/monsters/mimic.png", baseDamageMin:7, baseDamageMax:12, depthDamageFactor:1.4, monsterClass:"warrior" },
-  { name:"Ghoul", imagePath:"images/monsters/ghoul.png", baseDamageMin:6, baseDamageMax:10, depthDamageFactor:1.2, monsterClass:"rogue" },
-  { name:"Were Wolf", imagePath:"images/monsters/were_wolf.png", baseDamageMin:8, baseDamageMax:12, depthDamageFactor:1.4, monsterClass:"warrior" },
-  { name:"Giant Lizard", imagePath:"images/monsters/giant_lizard.png", baseDamageMin:6, baseDamageMax:10, depthDamageFactor:1.2, monsterClass:"warrior" },
-  { name:"Serpent Assassin", imagePath:"images/monsters/serpent_assassin.png", baseDamageMin:7, baseDamageMax:12, depthDamageFactor:1.5, monsterClass:"rogue" },
-  { name:"Death Knight", imagePath:"images/monsters/death_knight.png", baseDamageMin:9, baseDamageMax:14, depthDamageFactor:1.6, monsterClass:"warrior" },
-  { name:"Hell Hound", imagePath:"images/monsters/hell_hound.png", baseDamageMin:8, baseDamageMax:12, depthDamageFactor:1.4, monsterClass:"warrior" },
-  { name:"Lizard Warrior", imagePath:"images/monsters/lizard_warrior.png", baseDamageMin:7, baseDamageMax:11, depthDamageFactor:1.3, monsterClass:"warrior" },
-  { name:"Rune Drake", imagePath:"images/monsters/rune_drake.png", baseDamageMin:10, baseDamageMax:15, depthDamageFactor:1.8, monsterClass:"mage" },
-  { name:"Void Sentinal", imagePath:"images/monsters/void_sentinal.png", baseDamageMin:11, baseDamageMax:16, depthDamageFactor:2.0, monsterClass:"warrior" },
-  { name:"Mind Leech", imagePath:"images/monsters/mind_leech.png", baseDamageMin:9, baseDamageMax:13, depthDamageFactor:1.7, monsterClass:"rogue" },
-  { name:"Mind Flayer", imagePath:"images/monsters/mind_flayer.png", baseDamageMin:12, baseDamageMax:18, depthDamageFactor:2.1, monsterClass:"mage" }
-];
+  { name:"Orc", imagePath:"images/monsters/orc.png", baseDamageMin:5, baseDamageMax:10, depthDamageFactor:1.2, monsterClass:"rogue", flavor:"It snarls and beats its chest, eager for a fight." },
+  { name:"Snake", imagePath:"images/monsters/snake.png", baseDamageMin:2, baseDamageMax:5, depthDamageFactor:0.8, monsterClass:"rogue", flavor:"It coils and strikes with lightning speed." }
+
+  ];
 
 // === Level-based monster spawn configuration ===
-const ANY_LEVEL_MONSTERS = [];
+const ANY_LEVEL_MONSTERS = ["Cave Bat","Giant Spider","Dire Wolf","Slime"];
 const LEVEL_POOLS = {
-  1: ["Cave Bat","Dire Wolf","Giant Spider"],
-  2: ["Goblin","Goblin Shamen","Orc"],
-  3: ["Slime","Silent Fang","Mimic"],
-  4: ["Ghoul","Zombie","Were Wolf"],
-  5: ["Cyclops","Golem","Troll"],
-  6: ["Giant Lizard","Manticore","Serpent Assassin"],
-  7: ["Death Knight","Skeleton","Restless Ghost"],
-  8: ["Hell Hound","Impish Demon","Wraith"],
-  9: ["Lizard Warrior","Young Dragon","Rune Drake"],
-  10:["Void Sentinal","Mind Leech","Mind Flayer"]
+  1: ["Goblin","Orc","Troll","Ogre"],
+  2: ["Zombie","Restless Ghost","Skeleton","Wraith"],
+  3: ["Chimera","Cyclops","Manticore"],
+  4: ["Zombie","Restless Ghost","Skeleton","Wraith"],
+  5: ["Lizard","Lizardman","Fishman"],
+  6: ["Golem","Impish Demon"],
+  7: ["Zombie","Restless Ghost","Skeleton","Wraith"],
+  8: ["Snake","Young Dragon"],
 };
 function getMonstersForLevel(level){
   try{
@@ -577,9 +555,9 @@ function fadeOutAudio(audio, durationMs){
         try{ if (musicBoss){ musicBoss.volume = 0.35; const _p = musicBoss.play(); if (_p) _p.catch(()=>{}); } }catch(_e){}
         /*__BOSS_MUSIC_START_END__*/
         const level = getDungeonLevel();
-        currentRpsContext.opponentClass = (BOSS_CLASSES[level] || 'warrior');
+        currentRpsContext.opponentClass = ['warrior','rogue','mage'][(level - 1) % 3];
         opp = {
-          name:`Boss ${level}`,
+          name:`Boss of Level ${level}`,
           imagePath:`images/monsters/boss${level}.png`,
           baseDamageMin: 10 + level * 2,
           baseDamageMax: 15 + level * 3,
@@ -653,7 +631,7 @@ function fadeOutAudio(audio, durationMs){
           const action = currentRpsContext.opponentActionSequence[currentRpsContext.opponentSequenceDisplayIndex];
           const border = BORDER_COLORS[currentRpsContext.opponentSequenceDisplayIndex % BORDER_COLORS.length];
           const cls = currentRpsContext.opponentClass || 'warrior';
-          encounterGraphic.innerHTML = `<img src="${CLASS_RPS_IMAGES[cls][action]}" alt="Opponent Action" class="encounter-image" style="border:3px solid ${border}; box-sizing:border-box; border-radius:10px;">`;
+          encounterGraphic.innerHTML = `<img src="${CLASS_RPS_IMAGES[cls][action]}" alt="Opponent Action" class="encounter-image encounter-action" style="border:3px solid ${border}; box-sizing:border-box; border-radius:10px;">`;
           encounterMessage.textContent = `Opponent's Move ${currentRpsContext.opponentSequenceDisplayIndex + 1} / ${currentRpsContext.opponentActionSequence.length}`;
           currentRpsContext.opponentSequenceDisplayIndex++;
         }, ACTION_IMAGE_BLANK_DELAY_MS);
@@ -914,7 +892,7 @@ try{
 
     if (isSafeExit){
       finalScore = currentTreasure;
-      titleEl.textContent = "You Escaped!";
+      titleEl.textContent = "You Beat the Dungeon!";
       msgEl.innerHTML = `You bravely exited <strong>Dungeon Level ${dungeonLevel}</strong> after ${currentDepth} rooms with ${currentTreasure} gold!<br>Your final score is ${finalScore}.`;
       gameOverGraphic.innerHTML = `<img src="${STATIC_IMAGES.gameOverEscaped}" alt="Escaped Safely!" class="game-over-image">`;
     } else {

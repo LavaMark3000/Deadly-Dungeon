@@ -165,8 +165,7 @@ input[type="text"], input[type="email"]{
   padding: .4rem;
 }
 .rps-button:hover{ background: var(--box-hover); }
-.rps-action-image{
-  width: 68%; height: 68%; object-fit:contain; display:block;
+.rps-action-image{ width:86%; height:86%; object-fit:contain; display:block;
 }
 
 /* Game over panels */
@@ -1056,4 +1055,24 @@ body{
 #start-screen a[href*="Quest"]{
   display: inline-block !important;
   margin-bottom: 1.25rem !important;
+}
+
+
+/* Make the monster RPS sequence icons slightly smaller than the portrait */
+.encounter-action{
+  max-width:100% !important;
+  max-height:100% !important;
+  object-fit:contain;
+}
+
+
+@media (max-width: 560px){
+  /* Add breathing room above monster RPS icons / encounter area on mobile */
+  #encounter-graphic{ margin-top: clamp(8px, 2.5vh, 16px); }
+}
+
+
+@media (max-width: 560px){
+  /* Make player RPS icons fill the squares more on mobile */
+  .rps-action-image{ width:92%; height:92%; }
 }
