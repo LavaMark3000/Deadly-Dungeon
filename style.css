@@ -892,35 +892,168 @@ body{
 }
 
 
-/* === Stats column edge-justification (left column -> left, right column -> right) === */
-#player-info-header #player-stats-left{
-  justify-self: start !important;
-  text-align: left !important;
-  align-items: flex-start !important;
+/* === Mobile fix: make portrait image shrink with its container === */
+#player-info-header #player-character-display-area img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
 }
-#player-info-header #player-stats-right{
-  justify-self: end !important;
-  text-align: right !important;
-  align-items: flex-end !important;
+
+/* Smaller clamps on narrow screens so the whole header fits and the image scales down */
+@media (max-width: 560px){
+  #player-info-header #player-character-display-area{
+    width: clamp(40px, 14vw, 60px) !important;
+    height: clamp(40px, 14vw, 60px) !important;
+  }
 }
-/* Ensure individual stat rows respect column alignment */
-#player-info-header #player-stats-left .stat-item{ justify-content: flex-start !important; }
-#player-info-header #player-stats-right .stat-item{ justify-content: flex-end !important; }
 
 
-/* === Explicit grid placement for header cells === */
+/* === Absolute centering guarantee for portrait in header === */
 #player-info-header #player-details-row{
   display: grid !important;
   grid-template-columns: 1fr auto 1fr !important;
-  grid-auto-flow: column !important;
+  align-items: center !important;
+  justify-items: center !important;
+  column-gap: .5rem !important;
   width: 100% !important;
 }
-#player-info-header #player-stats-left{ grid-column: 1 !important; grid-row: 1 !important; }
-#player-info-header #player-character-display-area{ grid-column: 2 !important; grid-row: 1 !important; }
-#player-info-header #player-stats-right{ grid-column: 3 !important; grid-row: 1 !important; }
+#player-info-header #player-stats-left{ justify-self: start !important; text-align: left !important; }
+#player-info-header #player-stats-right{ justify-self: end !important; text-align: right !important; }
+#player-info-header #player-character-display-area{ grid-column: 2 !important; grid-row: 1 !important; justify-self: center !important; margin: 0 !important; }
 
-/* Lock the center truly in the middle with auto margins blocked */
+/* Ensure there is no stray padding pushing the grid off-center on mobile */
+@media (max-width: 560px){
+  #player-info-header {
+    padding-left: .75rem !important;
+    padding-right: .75rem !important;
+  }
+}
+
+
+/* === Stretch portrait to stats height === */
+#player-info-header #player-details-row{
+  align-items: stretch !important;         /* let grid items take full track height */
+}
 #player-info-header #player-character-display-area{
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  align-self: stretch !important;          /* center column fills the row height */
+  height: auto !important;                 /* let the box grow with the grid */
+  aspect-ratio: 1 / 1 !important;          /* keep it square while stretching vertically */
+  justify-self: center !important;
+}
+#player-info-header #player-character-display-area img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+/* On very small screens, cap the stretch a little so it doesn't dominate */
+@media (max-width: 560px){
+  #player-info-header #player-character-display-area{
+    max-height: 96px !important;
+  }
+}
+
+
+/* === Expand portrait container width and scale image === */
+#player-info-header #player-character-display-area{
+  width: auto !important;
+  min-width: 90px !important;
+  max-width: 120px !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+#player-info-header #player-character-display-area img{
+  width: 95% !important;
+  height: 95% !important;
+  object-fit: contain !important;
+}
+
+/* Slightly larger on desktop for balance */
+@media (min-width: 800px){
+  #player-info-header #player-character-display-area{
+    min-width: 110px !important;
+    max-width: 140px !important;
+  }
+}
+
+
+/* === Visually balanced portrait sizing === */
+#player-info-header #player-details-row{
+  align-items: center !important;            /* center items vertically, no stretch */
+}
+#player-info-header #player-character-display-area{
+  /* modest square that looks balanced next to 3-line stats */
+  width: clamp(72px, 9vw, 88px) !important;  /* desktop-ish range */
+  height: clamp(72px, 9vw, 88px) !important;
+  max-height: 92px !important;
+  aspect-ratio: 1 / 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+#player-info-header #player-character-display-area img{
+  width: 95% !important;                     /* keep 95% fill as requested */
+  height: 95% !important;
+  object-fit: contain !important;
+}
+/* Slightly smaller on narrow screens */
+@media (max-width: 560px){
+  #player-info-header #player-character-display-area{
+    width: clamp(58px, 12vw, 74px) !important;
+    height: clamp(58px, 12vw, 74px) !important;
+    max-height: 78px !important;
+  }
+}
+
+
+/* === Portrait: square, top-to-bottom symmetry with stats === */
+#player-info-header #player-details-row{
+  align-items: stretch !important; /* make all three columns equal height */
+}
+#player-info-header #player-character-display-area{
+  align-self: stretch !important;  /* fill the row height */
+  aspect-ratio: 1 / 1 !important;  /* square: width == height */
+  width: auto !important;
+  height: auto !important;
+  max-height: 110px !important;    /* sensible desktop cap */
+  justify-self: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+#player-info-header #player-character-display-area img{
+  width: 95% !important;           /* requested image fill */
+  height: 95% !important;
+  object-fit: contain !important;
+}
+
+/* Slightly lower cap on narrow screens to prevent crowding */
+@media (max-width: 560px){
+  #player-info-header #player-character-display-area{
+    max-height: 92px !important;
+  }
+}
+
+
+/* === Add bottom padding under Visit Quest Mentoring link on start screen === */
+#start-screen a[href*="Quest Mentoring"]{
+  display: inline-block !important;
+  margin-bottom: 1.2rem !important;
+}
+
+
+/* === Start screen: ensure breathing room under the bottom link === */
+#start-screen{
+  padding-bottom: 1.5rem !important;
+}
+#start-screen .company-credit,
+#start-screen .footer-link,
+#start-screen .start-footer,
+#start-screen .cta-footer,
+#start-screen a[href*="Quest"]{
+  display: inline-block !important;
+  margin-bottom: 1.25rem !important;
 }
