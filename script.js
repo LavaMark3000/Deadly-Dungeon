@@ -550,7 +550,7 @@ function fadeOutAudio(audio, durationMs){
   function updatePlayerStats(){
     updateHighScoreDisplays(); // refresh HS in header
     document.getElementById('stat-name').textContent = `${playerName}`;
-    document.getElementById('stat-class').textContent = playerClass ? playerClass.name : '';
+    document.getElementById('stat-class').textContent = (playerClass ? ({warrior:'W',rogue:'R',mage:'M'}[playerClass.id] || '') : '');
     document.getElementById('stat-health').textContent = `${playerHealth}`;
     document.getElementById('stat-treasure').textContent = `${currentTreasure}`;
     document.getElementById('stat-depth').textContent = `${currentDepth}`;
@@ -856,7 +856,9 @@ try{
                   encWrap.classList.remove('boss-defeated','defeated'); // clear overlays
                 }
               }catch(_e){}
-              stairsAvailable = true;
+              /* If level 10 boss beaten, trigger escape end */
+if (getDungeonLevel() >= 10) { finalizeCombatSequence(true, {}); setTimeout(() => endGame(true), 1200); return; }
+stairsAvailable = true;
               finalizeCombatSequence(true, {showStairs:true});
             }, 2000);
             }, 1000);
@@ -994,7 +996,7 @@ try{
 
     if (isSafeExit){
       finalScore = currentTreasure;
-      titleEl.textContent = "You Beat the Dungeon!";
+      titleEl.textContent = "You Escaped";
       msgEl.innerHTML = `You bravely exited <strong>Dungeon Level ${dungeonLevel}</strong> after ${currentDepth} rooms with ${currentTreasure} gold!<br>Your final score is ${finalScore}.`;
       gameOverGraphic.innerHTML = `<img src="${STATIC_IMAGES.gameOverEscaped}" alt="Escaped Safely!" class="game-over-image">`;
     } else {
