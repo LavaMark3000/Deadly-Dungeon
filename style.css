@@ -1076,3 +1076,13 @@ body{
   /* Make player RPS icons fill the squares more on mobile */
   .rps-action-image{ width:92%; height:92%; }
 }
+
+
+/* Added consistent gap above monster image container */
+#monster-container {
+    margin-top: 20px; /* Matches RPS symbol container gap */
+}
+
+
+/* Ensure a consistent gap above the monster image container (desktop & up) */
+#encounter-graphic { margin-top: clamp(8px, 2.5vh, 16px); }

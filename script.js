@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const MAX_SEQUENCE_LENGTH = 8;
   const ROOMS_PER_LEVEL = 5;
   // boss is the 5th room (4 encounters before the boss)
-  const BOSS_INTRO_DELAY_MS = 2500; // keep boss intro text visible before actions
+  const BOSS_INTRO_DELAY_MS = 3000; // keep boss intro text visible before actions
   const BOSS_REWARD_MULTIPLIER = 3; // bosses drop more treasure
 
   // Data
@@ -231,27 +231,128 @@ document.addEventListener('DOMContentLoaded', () => {
   { name:"Snake", imagePath:"images/monsters/snake.png", baseDamageMin:2, baseDamageMax:5, depthDamageFactor:0.8, monsterClass:"rogue", flavor:"It coils and strikes with lightning speed." }
 
   ];
+// === BEGIN: Explicit Level Configuration (Boss + Monsters) ===
+const CLASS_MAP = { w:'warrior', r:'rogue', m:'mage' };
 
-// === Level-based monster spawn configuration ===
-const ANY_LEVEL_MONSTERS = ["Cave Bat","Giant Spider","Dire Wolf","Slime"];
-const LEVEL_POOLS = {
-  1: ["Goblin","Orc","Troll","Ogre"],
-  2: ["Zombie","Restless Ghost","Skeleton","Wraith"],
-  3: ["Chimera","Cyclops","Manticore"],
-  4: ["Zombie","Restless Ghost","Skeleton","Wraith"],
-  5: ["Lizard","Lizardman","Fishman"],
-  6: ["Golem","Impish Demon"],
-  7: ["Zombie","Restless Ghost","Skeleton","Wraith"],
-  8: ["Snake","Young Dragon"],
-};
-function getMonstersForLevel(level){
-  try{
-    const names = new Set([...(LEVEL_POOLS[level] || []), ...ANY_LEVEL_MONSTERS]);
-    return MONSTER_TYPES.filter(m => names.has(m.name));
-  }catch(e){
-    return MONSTER_TYPES.filter(m => ANY_LEVEL_MONSTERS.includes(m.name));
+// Each level: boss {name, cls}, monsters: [{name, image, cls}]
+const LEVEL_CONFIG = {
+  1: {
+    boss: { name: "Boss 1", cls: "w" },
+    monsters: [
+      { name: "Cave Bat", image: "cave_bat.png", cls: "w" },
+      { name: "Dire Wolf", image: "dire_wolf.png", cls: "w" },
+      { name: "Giant Spider", image: "giant_spider.png", cls: "r" },
+    ]
+  },
+  2: {
+    boss: { name: "Boss 2", cls: "r" },
+    monsters: [
+      { name: "Goblin", image: "goblin.png", cls: "r" },
+      { name: "Goblin Shamen", image: "goblin_shamen.png", cls: "m" },
+      { name: "Orc", image: "orc.png", cls: "w" },
+    ]
+  },
+  3: {
+    boss: { name: "Boss 3", cls: "w" },
+    monsters: [
+      { name: "Slime", image: "slime.png", cls: "w" },
+      { name: "Silent Fang", image: "silent_fang.png", cls: "r" },
+      { name: "Mimic", image: "mimic.png", cls: "w" },
+    ]
+  },
+  4: {
+    boss: { name: "Boss 4", cls: "m" },
+    monsters: [
+      { name: "Ghoul", image: "ghoul.png", cls: "r" },
+      { name: "Zombie", image: "zombie.png", cls: "w" },
+      { name: "Were Wolf", image: "were_wolf.png", cls: "w" },
+    ]
+  },
+  5: {
+    boss: { name: "Boss 5", cls: "m" },
+    monsters: [
+      { name: "Cyclops", image: "cyclops.png", cls: "w" },
+      { name: "Golem", image: "golem.png", cls: "w" },
+      { name: "Troll", image: "troll.png", cls: "r" },
+    ]
+  },
+  6: {
+    boss: { name: "Boss 6", cls: "w" },
+    monsters: [
+      { name: "Giant Lizard", image: "giant_lizard.png", cls: "w" },
+      { name: "Manticore", image: "manticore.png", cls: "r" },
+      { name: "Serpent Assassin", image: "serpent_assassin.png", cls: "r" },
+    ]
+  },
+  7: {
+    boss: { name: "Boss 7", cls: "m" },
+    monsters: [
+      { name: "Death Knight", image: "death_knight.png", cls: "w" },
+      { name: "Skeleton", image: "skeleton.png", cls: "w" },
+      { name: "Restless Ghost", image: "restless_ghost.png", cls: "m" },
+    ]
+  },
+  8: {
+    boss: { name: "Boss 8", cls: "r" },
+    monsters: [
+      { name: "Hell Hound", image: "hell_hound.png", cls: "w" },
+      { name: "Impish Demon", image: "impish_demon.png", cls: "r" },
+      { name: "Wraith", image: "wraith.png", cls: "m" },
+    ]
+  },
+  9: {
+    boss: { name: "Boss 9", cls: "w" },
+    monsters: [
+      { name: "Lizard Warrior", image: "lizard_warrior.png", cls: "w" },
+      { name: "Young Dragon", image: "young_dragon.png", cls: "w" },
+      { name: "Rune Drake", image: "rune_drake.png", cls: "m" },
+    ]
+  },
+  10: {
+    boss: { name: "Boss 10", cls: "r" },
+    monsters: [
+      { name: "Void Sentinal", image: "void_sentinal.png", cls: "w" },
+      { name: "Mind Leech", image: "mind_leech.png", cls: "r" },
+      { name: "Mind Flayer", image: "mind_flayer.png", cls: "m" },
+    ]
   }
+};
+
+// Return a normalized monster object using MONSTER_TYPES if available (to preserve stats).
+function buildMonsterFromConfig(cfgMon){
+  const fullCls = CLASS_MAP[cfgMon.cls] || 'warrior';
+  const mt = MONSTER_TYPES.find(m => m.name === cfgMon.name);
+  if (mt){
+    // Merge: prefer config image/class if provided; keep base stats from data
+    return Object.assign({}, mt, {
+      imagePath: `images/monsters/${cfgMon.image}`,
+      monsterClass: fullCls
+    });
+  }
+  // Fallback generic stats if monster not pre-defined
+  return {
+    name: cfgMon.name,
+    imagePath: `images/monsters/${cfgMon.image}`,
+    baseDamageMin: 4,
+    baseDamageMax: 9,
+    depthDamageFactor: 1.2,
+    monsterClass: fullCls
+  };
 }
+
+function getConfiguredMonstersForLevel(level){
+  const cfg = LEVEL_CONFIG[level];
+  if (!cfg || !cfg.monsters) return [];
+  return cfg.monsters.map(buildMonsterFromConfig);
+}
+// === END: Explicit Level Configuration (Boss + Monsters) ===
+
+
+// === Level-based monster spawn configuration (REPLACED by LEVEL_CONFIG) ===
+function getMonstersForLevel(level){
+  try{ return getConfiguredMonstersForLevel(level); }catch(e){ return []; }
+}
+
 
   const TRAP_TYPES = [
     { name:"Spike Pit",  imagePath:"images/traps/spike_pit.png", baseDamageMin:8,  baseDamageMax:12, depthDamageFactor:1.5, monsterClass:'warrior' },
@@ -494,7 +595,7 @@ function fadeOutAudio(audio, durationMs){
     presentNewDoor();
     updateLevelBanner();
     openDoorButton.disabled = false;
-  }, 2400);
+  }, 3000);
 
   return;
 }
@@ -555,10 +656,11 @@ function fadeOutAudio(audio, durationMs){
         try{ if (musicBoss){ musicBoss.volume = 0.35; const _p = musicBoss.play(); if (_p) _p.catch(()=>{}); } }catch(_e){}
         /*__BOSS_MUSIC_START_END__*/
         const level = getDungeonLevel();
-        currentRpsContext.opponentClass = ['warrior','rogue','mage'][(level - 1) % 3];
+        const _bcfg = (LEVEL_CONFIG[level] && LEVEL_CONFIG[level].boss) || {name:`Boss ${level}`, cls:'w'};
+        currentRpsContext.opponentClass = CLASS_MAP[_bcfg.cls] || 'warrior';
         opp = {
-          name:`Boss of Level ${level}`,
-          imagePath:`images/monsters/boss${level}.png`,
+          name: _bcfg.name,
+          imagePath: `images/monsters/boss${level}.png`,
           baseDamageMin: 10 + level * 2,
           baseDamageMax: 15 + level * 3,
           depthDamageFactor: 2.0
@@ -569,7 +671,7 @@ function fadeOutAudio(audio, durationMs){
         playSound(sfx.monsterAppear);
         const lvl = getDungeonLevel() || 1;
         const pool = getMonstersForLevel(lvl);
-        const pick = (pool && pool.length ? pool : MONSTER_TYPES.filter(m => ANY_LEVEL_MONSTERS.includes(m.name)));
+        const pick = (pool && pool.length ? pool : []);
         opp = pick[Math.floor(Math.random()*pick.length)];
         currentRpsContext.opponentClass = opp.monsterClass;
         encounterGraphic.innerHTML = `<img src="${opp.imagePath}" alt="${opp.name}" class="encounter-image">`;
@@ -606,10 +708,10 @@ function fadeOutAudio(audio, durationMs){
 
     if (type !== 'boss'){
       encounterMessage.textContent = `The ${opp.name} appears! It's preparing its moves...`;
-      displayOpponentAction();
-    } else {
+      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 3000);
+      } else {
       // DELAYED BOSS INTRO
-      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, BOSS_INTRO_DELAY_MS);
+      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 3000);
     }
   }
 
@@ -686,7 +788,7 @@ try{
         playSound(sfx.monsterRoar); playSound(sfx.playerHit);
         takeDamage(currentRpsContext.opponentBaseDamage);
         encounterMessage.innerHTML = `FAIL! You take ${currentRpsContext.opponentBaseDamage} damage.`;
-        if (playerHealth <= 0) finalizeCombatSequence(false); else { setTimeout(() => restartCurrentCombat(), 1600); }
+        if (playerHealth <= 0) finalizeCombatSequence(false); else { setTimeout(() => restartCurrentCombat(), 3000); }
       }
     } else if (currentRpsContext.type === 'trap'){
       if (outcome === 'win'){
@@ -779,7 +881,7 @@ try{
         // No reset for total-wins mode
         takeDamage(currentRpsContext.opponentBaseDamage);
         encounterMessage.innerHTML = `FAIL! The ${currentRpsContext.opponentData.name} punishes you. Wins so far: ${currentRpsContext.bossCurrentStreak}/${currentRpsContext.bossRequiredStreak}.`;
-        if (playerHealth <= 0){ finalizeCombatSequence(false); } else { setTimeout(() => restartCurrentCombat(), 1600); }
+        if (playerHealth <= 0){ finalizeCombatSequence(false); } else { setTimeout(() => restartCurrentCombat(), 3000); }
       }
     }
   }
@@ -810,7 +912,7 @@ try{
       img.classList.remove('lunge-fail'); // restart animation if mid-flight
       void img.offsetWidth; // reflow
       img.classList.add('lunge-fail');
-      setTimeout(() => img.classList.remove('lunge-fail'), 250);
+      setTimeout(() => img.classList.remove('lunge-fail'), 3000);
     }
   } catch(_e) {}
 
@@ -818,7 +920,7 @@ try{
     const enc = document.getElementById('encounter-graphic');
     if (enc) {
       enc.classList.add('flash-fail');
-      setTimeout(() => enc.classList.remove('flash-fail'), 200);
+      setTimeout(() => enc.classList.remove('flash-fail'), 3000);
     }
   } catch(_e) {}
 
@@ -842,7 +944,7 @@ try{
       openDoorButton.style.display = 'none';
       proceedDeeperButton.style.display = 'none';
       exitDungeonButton.style.display = 'none';
-      setTimeout(() => { presentNewDoor(); }, 2000);
+      setTimeout(() => { presentNewDoor(); }, 3000);
       return;
     }
 
@@ -854,7 +956,7 @@ try{
       if (opts.showStairs){
       /*__BOSS_MUSIC_END_ON_STAIRS__*/
       try{ if (musicBoss) fadeOutAudio(musicBoss, 1000); }catch(_e){}
-      try{ setTimeout(() => { if (musicDungeon){ musicDungeon.volume = 0.3; const _p = musicDungeon.play(); if (_p) _p.catch(()=>{}); } }, 1000); }catch(_e){}
+      try{ setTimeout(() => { if (musicDungeon){ musicDungeon.volume = 0.3; const _p = musicDungeon.play(); if (_p) _p.catch(()=>{}); } }, 3000); }catch(_e){}
       /*__BOSS_MUSIC_END_ON_STAIRS_END__*/
         proceedDeeperButton.style.display = 'none';
         exitDungeonButton.style.display = 'inline-block';
