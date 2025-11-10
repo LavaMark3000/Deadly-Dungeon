@@ -50,6 +50,34 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   const musicDungeon = document.getElementById('music-dungeon');
   const musicBoss = document.getElementById('music-boss');
+  // --- One-time audio unlock for mobile/desktop ---
+  (function setupAudioUnlock(){
+    let unlocked = false;
+    function unlock(){
+      if (unlocked) return;
+      unlocked = true;
+      const tracks = [musicDungeon, musicBoss];
+      tracks.forEach(a => {
+        try {
+          if (!a) return;
+          const prevMuted = a.muted;
+          a.muted = true;
+          const p = a.play();
+          if (p && typeof p.catch === 'function') { p.catch(()=>{}); }
+          a.pause();
+          a.currentTime = 0;
+          a.muted = prevMuted;
+        } catch(e){ /* ignore */ }
+      });
+      document.removeEventListener('pointerdown', unlock, true);
+      document.removeEventListener('keydown', unlock, true);
+      document.removeEventListener('touchstart', unlock, true);
+    }
+    document.addEventListener('pointerdown', unlock, true);
+    document.addEventListener('keydown', unlock, true);
+    document.addEventListener('touchstart', unlock, true);
+  })();
+
   // === Obfuscated Challenge Code (client-side deterrent) ===
 
   // === Post-encoding letter-mapping (digits -> letters) ===
@@ -550,7 +578,7 @@ function fadeOutAudio(audio, durationMs){
   function updatePlayerStats(){
     updateHighScoreDisplays(); // refresh HS in header
     document.getElementById('stat-name').textContent = `${playerName}`;
-    document.getElementById('stat-class').textContent = (playerClass ? ({warrior:'W',rogue:'R',mage:'M'}[playerClass.id] || '') : '');
+    document.getElementById('stat-class').textContent = playerClass ? playerClass.name : '';
     document.getElementById('stat-health').textContent = `${playerHealth}`;
     document.getElementById('stat-treasure').textContent = `${currentTreasure}`;
     document.getElementById('stat-depth').textContent = `${currentDepth}`;
@@ -606,12 +634,15 @@ function fadeOutAudio(audio, durationMs){
     exitDungeonButton.style.display = 'none';
     hideBoth();
 
-    setTimeout(() => {
-      if (isBossRoom()){
-        startCombatSequence('boss');
-        return;
-      }
-      const roll = Math.random();
+    
+  // Run boss immediately inside user gesture to allow audio playback
+  if (isBossRoom()){
+    startCombatSequence('boss');
+    return;
+  }
+
+  setTimeout(() => {
+const roll = Math.random();
       if (roll < 0.40){
         startCombatSequence('monster');
       } else if (roll < 0.70){
@@ -856,9 +887,7 @@ try{
                   encWrap.classList.remove('boss-defeated','defeated'); // clear overlays
                 }
               }catch(_e){}
-              /* If level 10 boss beaten, trigger escape end */
-if (getDungeonLevel() >= 10) { finalizeCombatSequence(true, {}); setTimeout(() => endGame(true), 1200); return; }
-stairsAvailable = true;
+              stairsAvailable = true;
               finalizeCombatSequence(true, {showStairs:true});
             }, 2000);
             }, 1000);
@@ -996,7 +1025,7 @@ stairsAvailable = true;
 
     if (isSafeExit){
       finalScore = currentTreasure;
-      titleEl.textContent = "You Escaped";
+      titleEl.textContent = "You Beat the Dungeon!";
       msgEl.innerHTML = `You bravely exited <strong>Dungeon Level ${dungeonLevel}</strong> after ${currentDepth} rooms with ${currentTreasure} gold!<br>Your final score is ${finalScore}.`;
       gameOverGraphic.innerHTML = `<img src="${STATIC_IMAGES.gameOverEscaped}" alt="Escaped Safely!" class="game-over-image">`;
     } else {
