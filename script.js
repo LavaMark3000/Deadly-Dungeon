@@ -790,22 +790,17 @@ try{
         encounterMessage.innerHTML = `FAIL! You take ${currentRpsContext.opponentBaseDamage} damage.`;
         if (playerHealth <= 0) finalizeCombatSequence(false); else { setTimeout(() => restartCurrentCombat(), 3000); }
       }
-    } else if (currentRpsContext.type === 'trap'){
-      if (outcome === 'win'){
-        currentRpsContext.playerCurrentSequenceStep++;
-        if (currentRpsContext.playerCurrentSequenceStep === currentRpsContext.opponentActionSequence.length){
-          playSound(sfx.trapDisarm);
-          const baseGold = Math.floor((Math.random()*(15 + currentDepth*3) + (10 + currentDepth)) * 0.5);
-          currentTreasure += baseGold; playSound(sfx.treasure);
-          let msg = `CLEVER! You disarmed the ${currentRpsContext.opponentData.name} and recover ${baseGold} gold.`;
-          if (playerClass && playerClass.id === 'rogue'){
-            const rogueGold = Math.floor(Math.random()*(10 + currentDepth*2)) + (10 + currentDepth*2);
-            currentTreasure += rogueGold; playSound(sfx.treasure);
-            msg += ` As a Rogue, you pocket an extra ${rogueGold} gold!`;
-          }
-          encounterMessage.innerHTML = msg; updatePlayerStats();
-          finalizeCombatSequence(true, {autoProceed:true});
-        } else {
+    } else if (currentRpsContext.type === 'trap') {
+  if (outcome === 'win') {
+    currentRpsContext.playerCurrentSequenceStep++;
+    if (currentRpsContext.playerCurrentSequenceStep === currentRpsContext.opponentActionSequence.length) {
+      playSound(sfx.trapDisarm);
+      const baseGold = Math.floor((Math.random()*(15 + currentDepth*3) + (10 + currentDepth)) * 0.35); // depth-scaled, small, random
+      currentTreasure += baseGold; playSound(sfx.treasure);
+      const msg = `CLEVER! You disarmed the ${currentRpsContext.opponentData.name} and recover ${baseGold} gold.`;
+      encounterMessage.innerHTML = msg; updatePlayerStats();
+      finalizeCombatSequence(true, {autoProceed:true});
+    } else {
           encounterMessage.innerHTML = `Careful... Next step to disarm (${currentRpsContext.playerCurrentSequenceStep + 1}/${currentRpsContext.opponentActionSequence.length}).`;
           rpsButtons.forEach(btn => btn.disabled = false);
           markRpsReady(true);

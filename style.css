@@ -514,7 +514,7 @@ input[type="text"], input[type="email"]{
 /* === Backgrounds === */
 /* Global dungeon wall on all screens except start */
 .screen {
-  background-image: url("images/background/wall.png");
+  background-image: url("./images/background/wall.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -524,7 +524,7 @@ input[type="text"], input[type="email"]{
 
 /* Keep the start screen using MainScreen.png */
 #start-screen {
-  background-image: url("images/background/mainscreen.png");
+  background-image: url("./images/background/mainscreen.png");
 }
 
 /* Readability overlay that does NOT block clicks */
