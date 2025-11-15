@@ -1,117 +1,3 @@
-// === Encounter flavor helpers ===
-const MONSTER_INTRO_TEMPLATES = [
-  (name) => `The ${name} appears! It's preparing its moves...`,
-  (name) => `A ${name} lunges from the shadows! Study its sequence...`,
-  (name) => `You face a ${name}! Watch its pattern carefully...`
-];
-
-const TRAP_INTRO_TEMPLATES = [
-  (name) => `You sense a ${name} ahead... memorise its pattern.`,
-  (name) => `A ${name} lies in wait! Watch each step closely...`,
-  (name) => `Careful! The ${name} is about to trigger. Learn its sequence...`
-];
-
-const MONSTER_VICTORY_LINES = {
-  warrior: [
-    "You cleave the {name} with a crushing blow!",
-    "Steel prevails! The {name} falls before your might.",
-    "Your shield holds and your strike drops the {name}."
-  ],
-  rogue: [
-    "You slip behind the {name} and end it with a precise strike.",
-    "The {name} never sees the dagger coming.",
-    "Shadows and steel – the {name} is no more."
-  ],
-  mage: [
-    "Your spell detonates and the {name} crumbles.",
-    "Arcane power overwhelms the {name}.",
-    "A final surge of magic unravels the {name}."
-  ],
-  default: [
-    "You defeat the {name} with practiced skill.",
-    "The {name} falls – another threat overcome.",
-    "Calm focus wins the day as the {name} goes down."
-  ]
-};
-
-const TRAP_VICTORY_LINES = {
-  warrior: [
-    "You brace yourself and smash the {name} mechanism apart.",
-    "With steady hands, you break the {name} before it triggers.",
-    "You muscle through the {name}, disabling it with brute force."
-  ],
-  rogue: [
-    "Swift fingers dance over the {name} and it clicks harmlessly open.",
-    "You grin as you pluck the {name} apart like a puzzle box.",
-    "A few deft moves and the {name} is completely disarmed."
-  ],
-  mage: [
-    "You trace a glyph and the magic in the {name} fizzles out.",
-    "Your senses pinpoint the {name}'s trigger and you unravel it.",
-    "A quiet spell unwinds the workings of the {name}."
-  ],
-  default: [
-    "You patiently dismantle the {name} without a scratch.",
-    "Careful work leaves the {name} in pieces at your feet.",
-    "You disarm the {name} with measured, precise movements."
-  ]
-};
-
-const BOSS_VICTORY_LINES = {
-  warrior: [
-    "You bring the final crushing blow – the boss collapses at your feet.",
-    "Steel sings as the boss falls before your unstoppable assault.",
-    "You stand over the fallen boss, armour smoking and victorious."
-  ],
-  rogue: [
-    "You slip through the chaos and land the decisive strike on the boss.",
-    "A perfectly timed attack drops the boss in stunned silence.",
-    "From the shadows, your final blow ends the boss's reign."
-  ],
-  mage: [
-    "A storm of magic erupts and the boss is consumed by your power.",
-    "Your final incantation tears through the boss's defences.",
-    "Arcane light flares – when it fades, the boss lies defeated."
-  ],
-  default: [
-    "With a final effort, you bring the boss crashing down.",
-    "The dungeon shudders as the boss is finally defeated.",
-    "You endure the last onslaught and the boss falls before you."
-  ]
-};
-
-function pickClassIdForFlavor(){
-  return (typeof playerClass !== 'undefined' && playerClass && playerClass.id) ? playerClass.id : 'default';
-}
-
-function pickRandomLine(lines){
-  if (!lines || !lines.length) return "";
-  return lines[Math.floor(Math.random() * lines.length)];
-}
-
-function buildMonsterVictoryText(opponentName, gold){
-  const cls = pickClassIdForFlavor();
-  const lines = MONSTER_VICTORY_LINES[cls] || MONSTER_VICTORY_LINES.default;
-  const flavor = pickRandomLine(lines).replace("{name}", opponentName);
-  return `${flavor} You find ${gold} gold.`;
-}
-
-function buildTrapVictoryText(opponentName, gold){
-  const cls = pickClassIdForFlavor();
-  const lines = TRAP_VICTORY_LINES[cls] || TRAP_VICTORY_LINES.default;
-  const flavor = pickRandomLine(lines).replace("{name}", opponentName);
-  return `${flavor} You recover ${gold} gold from the mechanism.`;
-}
-
-function buildBossVictoryText(opponentName, gold, multiplier){
-  const cls = pickClassIdForFlavor();
-  const lines = BOSS_VICTORY_LINES[cls] || BOSS_VICTORY_LINES.default;
-  const flavor = pickRandomLine(lines).replace("{name}", opponentName);
-  return `${flavor} You claim ${gold} gold! (Boss reward ×${multiplier})`;
-}
-
-// === End encounter flavor helpers ===
-
 document.addEventListener('DOMContentLoaded', () => {
   // Elements
   const startScreen = document.getElementById('start-screen');
@@ -277,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Constants
   const DOOR_OPEN_REVEAL_DELAY_MS = 1200;
   const SCENE_TRANSITION_DELAY_MS = 300;
-  const GAME_OVER_DELAY_MS = 1500;
+  const GAME_OVER_DELAY_MS = 3000;
   const MONSTER_ACTION_DISPLAY_SPEED_BASE = 1500;
   const MONSTER_ACTION_DISPLAY_SPEED_DEPTH_FACTOR = 0;
   const ACTION_IMAGE_BLANK_DELAY_MS = 100;
@@ -348,10 +234,279 @@ document.addEventListener('DOMContentLoaded', () => {
 // === BEGIN: Explicit Level Configuration (Boss + Monsters) ===
 const CLASS_MAP = { w:'warrior', r:'rogue', m:'mage' };
 
+const BOSS_INTRO_LINES_BY_NAME = {
+  "Minotaur": [
+    "The {name} snorts and lowers its horns, ready to charge.",
+    "The {name} stamps the ground, each impact shaking the stone."
+  ],
+  "Orc Huntress": [
+    "The {name} nocks an arrow, eyes gleaming with the thrill of the hunt.",
+    "You hear a low chuckle as the {name} draws a bead on you."
+  ],
+  "Fire Salamander": [
+    "The {name} slithers from a pool of lava, embers dancing around it.",
+    "Heat rolls off the {name} as flames lick along its scales."
+  ],
+  "Vampire Countess": [
+    "The {name} glides from the shadows, fangs bared in a cold smile.",
+    "Candlelight dies as the {name} steps forward, hunger in her eyes."
+  ],
+  "Beholder": [
+    "The {name} floats into view, its many eyes fixing on you at once.",
+    "A dozen eyes of the {name} flare with strange, alien light."
+  ],
+  "Hydra": [
+    "The {name} rears up, multiple heads hissing in unison.",
+    "Each severed head of the {name} seems to regrow as you watch."
+  ],
+  "Lich King": [
+    "The {name} rises, robes billowing with unseen power.",
+    "Cold light burns in the eyes of the {name} as it raises its staff."
+  ],
+  "Demon Overlord": [
+    "The {name} strides from a rift of fire, claws scraping the stone.",
+    "Chains rattle as the {name} emerges, surrounded by burning sigils."
+  ],
+  "Green Dragon": [
+    "The {name} coils around shattered stone, venomous breath seeping out.",
+    "Wings unfurl as the {name} lifts its head and snarls."
+  ],
+  "Abyssal Horror": [
+    "The {name} oozes from the darkness, shapes within it twisting.",
+    "Whispers echo in your mind as the {name} takes form."
+  ]
+};
+
+const BOSS_DEFEAT_LINES_BY_NAME = {
+  "Minotaur": [
+    "With a final roar, the {name} crashes to the dungeon floor.",
+    "The {name}'s horns gouge stone as it falls, defeated at last."
+  ],
+  "Orc Huntress": [
+    "The {name} drops her bow, vanishing into the dust of the dungeon.",
+    "An arrow clatters away as the {name} falls to one knee, then to the ground."
+  ],
+  "Fire Salamander": [
+    "The flames around the {name} sputter out as it collapses.",
+    "Steam rises as the {name} hisses one last time and lies still."
+  ],
+  "Vampire Countess": [
+    "The {name} dissolves into mist, leaving only silence behind.",
+    "Shadow peels away from the {name} as her form crumbles to ash."
+  ],
+  "Beholder": [
+    "The eyes of the {name} dim one by one before it crashes to the floor.",
+    "A final beam sputters from the {name} before its central eye goes dark."
+  ],
+  "Hydra": [
+    "One by one, the heads of the {name} fall limp.",
+    "The {name} thrashes wildly before finally lying still."
+  ],
+  "Lich King": [
+    "The {name}'s staff shatters as its armor collapses into a heap.",
+    "A ghostly wail escapes the {name} as its magic finally fails."
+  ],
+  "Demon Overlord": [
+    "The {name} staggers back into the shadows, flames guttering out.",
+    "Chains fall slack as the {name} lets out a furious, fading roar."
+  ],
+  "Green Dragon": [
+    "The {name} lets out a final, rattling hiss before falling still.",
+    "Wings collapse around the {name} as it crashes to the stone."
+  ],
+  "Abyssal Horror": [
+    "The shape of the {name} unravels, melting back into the darkness.",
+    "Whispers fall silent as the {name} collapses into nothing."
+  ]
+};
+
+function pickRandomLine(lines){
+  if (!lines || !lines.length) return "";
+  return lines[Math.floor(Math.random() * lines.length)];
+}
+
+
+function getFlavorClassId(){
+  try {
+    if (playerClass && playerClass.id){
+      if (playerClass.id === 'warrior' || playerClass.id === 'rogue' || playerClass.id === 'mage'){
+        return playerClass.id;
+      }
+    }
+  } catch (_e) {}
+  return 'default';
+}
+
+const MONSTER_INTRO_LINES_BY_CLASS = {
+  warrior: [
+    "You raise your shield as the {name} closes in.",
+    "Steel rings as you prepare to meet the {name} head-on."
+  ],
+  rogue: [
+    "You slip into the shadows, studying the {name}'s movements.",
+    "Daggers ready, you circle the {name} for an opening."
+  ],
+  mage: [
+    "Arcane energy hums at your fingertips as the {name} appears.",
+    "You begin to weave a spell as the {name} lurches into view."
+  ],
+  default: [
+    "You steady yourself as the {name} appears from the darkness.",
+    "You ready yourself to face the {name}."
+  ]
+};
+
+const TRAP_INTRO_LINES_BY_CLASS = {
+  warrior: [
+    "You slow your pace, scanning the floor for hidden dangers.",
+    "Instinct tells you something is wrong with this section of corridor."
+  ],
+  rogue: [
+    "Your eyes catch the slightest disturbance—this place is trapped.",
+    "A faint glint and a loose stone tell you a trap lies ahead."
+  ],
+  mage: [
+    "You feel a prickling in the air—there is magic or mechanism at work here.",
+    "Your senses tingle as you detect the subtle pattern of a trap."
+  ],
+  default: [
+    "You notice something odd ahead—a trap waits for the careless.",
+    "You tread carefully; there is definitely a trap here."
+  ]
+};
+
+const MONSTER_VICTORY_LINES_BY_CLASS = {
+  warrior: [
+    "You cut the {name} down in a decisive strike and recover {gold} gold from its corpse.",
+    "With a powerful blow you fell the {name}, claiming {gold} gold from its remains."
+  ],
+  rogue: [
+    "You outmaneuver the {name}, striking from the shadows and looting {gold} gold.",
+    "The {name} never sees the final strike coming; you lighten it of {gold} gold."
+  ],
+  mage: [
+    "Your spell unravels the {name}, leaving behind {gold} gold among the ash.",
+    "Arcane force smashes the {name} apart; you gather {gold} gold from the battlefield."
+  ],
+  default: [
+    "You defeat the {name} and recover {gold} gold.",
+    "The {name} falls, leaving behind {gold} gold for you to collect."
+  ]
+};
+
+const TRAP_VICTORY_LINES_BY_CLASS = {
+  warrior: [
+    "You brace yourself and carefully disable the {name}, salvaging {gold} gold from its parts.",
+    "With patience and muscle, you render the {name} harmless and pocket {gold} gold."
+  ],
+  rogue: [
+    "Nimble hands dance across the {name}, disarming it and claiming {gold} gold in hidden compartments.",
+    "You deftly disarm the {name}, smiling as you uncover {gold} gold tucked away inside."
+  ],
+  mage: [
+    "You disrupt the workings of the {name} with a precise gesture, recovering {gold} gold from its mechanism.",
+    "A focused spell unravels the {name}, and you extract {gold} gold from what remains."
+  ],
+  default: [
+    "You carefully disarm the {name} and recover {gold} gold from its mechanism.",
+    "With care and focus, you disable the {name}, earning {gold} gold for your trouble."
+  ]
+};
+
+const BOSS_INTRO_CLASS_LINES = {
+  warrior: [
+    "You plant your feet and raise your weapon, ready to stand your ground.",
+    "You steel yourself, every muscle tensed for the coming clash."
+  ],
+  rogue: [
+    "You fade toward the edges of the chamber, seeking shadows and openings.",
+    "You loosen your stance, ready to dart in and out of danger."
+  ],
+  mage: [
+    "You draw a deep breath as arcane power surges, ready to answer this challenge.",
+    "You whisper a spell under your breath, warding yourself as you prepare to strike."
+  ],
+  default: [
+    "You prepare yourself for a desperate battle.",
+    "You focus your mind and steady your breathing for the fight ahead."
+  ]
+};
+
+const BOSS_VICTORY_CLASS_LINES = {
+  warrior: [
+    "You stand firm amidst the settling dust, weapon still at the ready.",
+    "Breathing hard, you lower your weapon, victorious but wary of what lies ahead."
+  ],
+  rogue: [
+    "You slip your weapons away, already scanning for the next opportunity.",
+    "You melt back into the gloom, another trophy added to your silent legend."
+  ],
+  mage: [
+    "You let the last sparks of magic fade from your hands, mind already turning to the next challenge.",
+    "You steady your breathing as the lingering glow of your spellwork fades."
+  ],
+  default: [
+    "You take a moment to catch your breath and take stock.",
+    "You stand victorious, but the dungeon still presses in around you."
+  ]
+};
+
+function buildMonsterIntroText(opponentName){
+  const cls = getFlavorClassId();
+  const lines = MONSTER_INTRO_LINES_BY_CLASS[cls] || MONSTER_INTRO_LINES_BY_CLASS.default;
+  return pickRandomLine(lines).replace("{name}", opponentName);
+}
+
+function buildTrapIntroText(opponentName){
+  const cls = getFlavorClassId();
+  const lines = TRAP_INTRO_LINES_BY_CLASS[cls] || TRAP_INTRO_LINES_BY_CLASS.default;
+  return pickRandomLine(lines).replace("{name}", opponentName);
+}
+
+function buildBossIntroText(opponentName){
+  const baseLines = BOSS_INTRO_LINES_BY_NAME[opponentName];
+  let base;
+  if (!baseLines || !baseLines.length){
+    base = `A powerful foe approaches: ${opponentName}!`;
+  } else {
+    base = pickRandomLine(baseLines).replace("{name}", opponentName);
+  }
+  const cls = getFlavorClassId();
+  const classTailLines = BOSS_INTRO_CLASS_LINES[cls] || BOSS_INTRO_CLASS_LINES.default;
+  const tail = pickRandomLine(classTailLines);
+  return `${base} ${tail}`;
+}
+
+function buildMonsterVictoryText(opponentName, gold){
+  const cls = getFlavorClassId();
+  const lines = MONSTER_VICTORY_LINES_BY_CLASS[cls] || MONSTER_VICTORY_LINES_BY_CLASS.default;
+  return pickRandomLine(lines).replace("{name}", opponentName).replace("{gold}", gold);
+}
+
+function buildTrapVictoryText(opponentName, gold){
+  const cls = getFlavorClassId();
+  const lines = TRAP_VICTORY_LINES_BY_CLASS[cls] || TRAP_VICTORY_LINES_BY_CLASS.default;
+  return pickRandomLine(lines).replace("{name}", opponentName).replace("{gold}", gold);
+}
+
+function buildBossVictoryText(opponentName, gold, multiplier){
+  const specific = BOSS_DEFEAT_LINES_BY_NAME[opponentName];
+  let flavor;
+  if (specific && specific.length){
+    flavor = pickRandomLine(specific).replace("{name}", opponentName);
+  } else {
+    flavor = `You bring down ${opponentName} in a hard-fought battle.`;
+  }
+  const cls = getFlavorClassId();
+  const classTailLines = BOSS_VICTORY_CLASS_LINES[cls] || BOSS_VICTORY_CLASS_LINES.default;
+  const tail = pickRandomLine(classTailLines);
+  return `${flavor} ${tail} You claim ${gold} gold! (Boss reward ×${multiplier})`;
+}
+
 // Each level: boss {name, cls}, monsters: [{name, image, cls}]
 const LEVEL_CONFIG = {
   1: {
-    boss: { name: "Boss 1", cls: "w" },
+    boss: { name: "Minotaur", cls: "w" },
     monsters: [
       { name: "Cave Bat", image: "cave_bat.png", cls: "w" },
       { name: "Dire Wolf", image: "dire_wolf.png", cls: "w" },
@@ -359,7 +514,7 @@ const LEVEL_CONFIG = {
     ]
   },
   2: {
-    boss: { name: "Boss 2", cls: "r" },
+    boss: { name: "Orc Huntress", cls: "r" },
     monsters: [
       { name: "Goblin", image: "goblin.png", cls: "r" },
       { name: "Goblin Shamen", image: "goblin_shamen.png", cls: "m" },
@@ -367,7 +522,7 @@ const LEVEL_CONFIG = {
     ]
   },
   3: {
-    boss: { name: "Boss 3", cls: "w" },
+    boss: { name: "Fire Salamander", cls: "w" },
     monsters: [
       { name: "Slime", image: "slime.png", cls: "w" },
       { name: "Silent Fang", image: "silent_fang.png", cls: "r" },
@@ -375,7 +530,7 @@ const LEVEL_CONFIG = {
     ]
   },
   4: {
-    boss: { name: "Boss 4", cls: "m" },
+    boss: { name: "Vampire Countess", cls: "m" },
     monsters: [
       { name: "Ghoul", image: "ghoul.png", cls: "r" },
       { name: "Zombie", image: "zombie.png", cls: "w" },
@@ -383,7 +538,7 @@ const LEVEL_CONFIG = {
     ]
   },
   5: {
-    boss: { name: "Boss 5", cls: "m" },
+    boss: { name: "Beholder", cls: "m" },
     monsters: [
       { name: "Cyclops", image: "cyclops.png", cls: "w" },
       { name: "Golem", image: "golem.png", cls: "w" },
@@ -391,7 +546,7 @@ const LEVEL_CONFIG = {
     ]
   },
   6: {
-    boss: { name: "Boss 6", cls: "w" },
+    boss: { name: "Hydra", cls: "w" },
     monsters: [
       { name: "Giant Lizard", image: "giant_lizard.png", cls: "w" },
       { name: "Manticore", image: "manticore.png", cls: "r" },
@@ -399,7 +554,7 @@ const LEVEL_CONFIG = {
     ]
   },
   7: {
-    boss: { name: "Boss 7", cls: "m" },
+    boss: { name: "Lich King", cls: "m" },
     monsters: [
       { name: "Death Knight", image: "death_knight.png", cls: "w" },
       { name: "Skeleton", image: "skeleton.png", cls: "w" },
@@ -407,7 +562,7 @@ const LEVEL_CONFIG = {
     ]
   },
   8: {
-    boss: { name: "Boss 8", cls: "r" },
+    boss: { name: "Demon Overlord", cls: "r" },
     monsters: [
       { name: "Hell Hound", image: "hell_hound.png", cls: "w" },
       { name: "Impish Demon", image: "impish_demon.png", cls: "r" },
@@ -415,7 +570,7 @@ const LEVEL_CONFIG = {
     ]
   },
   9: {
-    boss: { name: "Boss 9", cls: "w" },
+    boss: { name: "Green Dragon", cls: "w" },
     monsters: [
       { name: "Lizard Warrior", image: "lizard_warrior.png", cls: "w" },
       { name: "Young Dragon", image: "young_dragon.png", cls: "w" },
@@ -423,14 +578,53 @@ const LEVEL_CONFIG = {
     ]
   },
   10: {
-    boss: { name: "Boss 10", cls: "r" },
+    boss: { name: "Abyssal Horror", cls: "r" },
     monsters: [
       { name: "Void Sentinal", image: "void_sentinal.png", cls: "w" },
       { name: "Mind Leech", image: "mind_leech.png", cls: "r" },
       { name: "Mind Flayer", image: "mind_flayer.png", cls: "m" },
     ]
   }
+}
+
+const BOSS_IMAGE_MAP = {
+  1: "images/monsters/boss1_minotaur.png",
+  2: "images/monsters/boss2_orc_huntress.png",
+  3: "images/monsters/boss3_fire_salamander.png",
+  4: "images/monsters/boss4_vampire_countess.png",
+  5: "images/monsters/boss5_beholder.png",
+  6: "images/monsters/boss6_hydra.png",
+  7: "images/monsters/boss7_lich_king.png",
+  8: "images/monsters/boss8_demon_overlord.png",
+  9: "images/monsters/boss9_green_dragon.png",
+  10: "images/monsters/boss10_abyssal_horror.png"
 };
+
+
+
+function resetBossLevelOrder(){
+  // Build a shuffled list of the configured level IDs (1..10)
+  const levels = Object.keys(LEVEL_CONFIG).map(n => parseInt(n, 10)).sort((a,b) => a - b);
+  for (let i = levels.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = levels[i];
+    levels[i] = levels[j];
+    levels[j] = tmp;
+  }
+  bossLevelOrder = levels;
+}
+
+function getEffectiveLevelIdForDungeonLevel(level){
+  // Map the visible dungeon level (1..N) to a shuffled LEVEL_CONFIG key.
+  if (!bossLevelOrder || !bossLevelOrder.length) return level;
+  const idx = Math.max(0, Math.min(level - 1, bossLevelOrder.length - 1));
+  return bossLevelOrder[idx];
+}
+
+// For debugging, you could log bossLevelOrder when a run starts.
+// console.log('Boss order this run:', bossLevelOrder);
+
+;
 
 // Return a normalized monster object using MONSTER_TYPES if available (to preserve stats).
 function buildMonsterFromConfig(cfgMon){
@@ -455,7 +649,8 @@ function buildMonsterFromConfig(cfgMon){
 }
 
 function getConfiguredMonstersForLevel(level){
-  const cfg = LEVEL_CONFIG[level];
+  const mappedLevel = getEffectiveLevelIdForDungeonLevel(level);
+  const cfg = LEVEL_CONFIG[mappedLevel];
   if (!cfg || !cfg.monsters) return [];
   return cfg.monsters.map(buildMonsterFromConfig);
 }
@@ -494,6 +689,8 @@ function getMonstersForLevel(level){
   let playerMaxHealth = 0;
   let currentTreasure = 0;
   let dungeonLevel = 1; // explicit dungeon level tracker
+  let bossLevelOrder = [];
+
   let currentDepth = 0; // shown as Rooms
   let lastDisplayedLevel = 1;
   let stairsAvailable = false;
@@ -622,8 +819,8 @@ function fadeOutAudio(audio, durationMs){
   dungeonLevel = 1;
   lastDisplayedLevel = 1;
   stairsAvailable = false;
-
-    if (!playerClass){ document.getElementById('class-description').textContent = "Please select a class first!"; return; }
+  resetBossLevelOrder();
+if (!playerClass){ document.getElementById('class-description').textContent = "Please select a class first!"; return; }
     playerHealth = playerClass.startingHealth;
     playerMaxHealth = playerClass.startingHealth;
     currentTreasure = 0;
@@ -770,11 +967,12 @@ function fadeOutAudio(audio, durationMs){
         try{ if (musicBoss){ musicBoss.volume = 0.35; const _p = musicBoss.play(); if (_p) _p.catch(()=>{}); } }catch(_e){}
         /*__BOSS_MUSIC_START_END__*/
         const level = getDungeonLevel();
-        const _bcfg = (LEVEL_CONFIG[level] && LEVEL_CONFIG[level].boss) || {name:`Boss ${level}`, cls:'w'};
+        const mappedLevel = getEffectiveLevelIdForDungeonLevel(level);
+        const _bcfg = (LEVEL_CONFIG[mappedLevel] && LEVEL_CONFIG[mappedLevel].boss) || {name:`Unknown Boss`, cls:'w'};
         currentRpsContext.opponentClass = CLASS_MAP[_bcfg.cls] || 'warrior';
         opp = {
           name: _bcfg.name,
-          imagePath: `images/monsters/boss${level}.png`,
+          imagePath: BOSS_IMAGE_MAP[mappedLevel] || `images/monsters/boss${mappedLevel}.png`,
           baseDamageMin: 10 + level * 2,
           baseDamageMax: 15 + level * 3,
           depthDamageFactor: 2.0
@@ -820,20 +1018,16 @@ function fadeOutAudio(audio, durationMs){
     showRpsChoices();
     keyHelp.style.display = 'inline-flex';
 
-    if (type !== 'boss'){
-      if (currentRpsContext.type === 'monster') {
-        const tmpl = MONSTER_INTRO_TEMPLATES[Math.floor(Math.random() * MONSTER_INTRO_TEMPLATES.length)];
-        encounterMessage.textContent = tmpl(opp.name);
-      } else if (currentRpsContext.type === 'trap') {
-        const tmpl = TRAP_INTRO_TEMPLATES[Math.floor(Math.random() * TRAP_INTRO_TEMPLATES.length)];
-        encounterMessage.textContent = tmpl(opp.name);
-      } else {
-        encounterMessage.textContent = `The ${opp.name} appears! It's preparing its moves...`;
-      }
-      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 3000);
+    if (type === 'monster'){
+      encounterMessage.textContent = buildMonsterIntroText(opp.name);
+      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 4500);
+    } else if (type === 'trap'){
+      encounterMessage.textContent = buildTrapIntroText(opp.name);
+      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 4500);
     } else {
-      // DELAYED BOSS INTRO
-      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 3000);
+      // Themed boss intro with class flavor
+      encounterMessage.textContent = buildBossIntroText(opp.name);
+      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 4500);
     }
   }
 
@@ -918,9 +1112,11 @@ try{
         if (currentRpsContext.playerCurrentSequenceStep === currentRpsContext.opponentActionSequence.length){
           playSound(sfx.trapDisarm);
           const baseGold = Math.floor((Math.random()*(15 + currentDepth*3) + (10 + currentDepth)) * 0.35);
-          currentTreasure += baseGold; playSound(sfx.treasure);
+          currentTreasure += baseGold; 
+          playSound(sfx.treasure);
           const msg = buildTrapVictoryText(currentRpsContext.opponentData.name, baseGold);
-          encounterMessage.innerHTML = msg; updatePlayerStats();
+          encounterMessage.innerHTML = msg; 
+          updatePlayerStats();
           finalizeCombatSequence(true, {autoProceed:true});
         } else {
           encounterMessage.innerHTML = `Careful... Next step to go (${currentRpsContext.playerCurrentSequenceStep + 1}/${currentRpsContext.opponentActionSequence.length}).`;
@@ -932,7 +1128,11 @@ try{
         playSound(sfx.playerHit);
         takeDamage(currentRpsContext.opponentBaseDamage);
         encounterMessage.innerHTML = `OOPS! The ${currentRpsContext.opponentData.name} triggers! You take ${currentRpsContext.opponentBaseDamage} damage.`;
-        if (playerHealth <= 0){ finalizeCombatSequence(false); } else { finalizeCombatSequence(true, {autoProceed:true}); }
+        if (playerHealth <= 0){ 
+          finalizeCombatSequence(false); 
+        } else { 
+          finalizeCombatSequence(true, {autoProceed:true}); 
+        }
       }
     }
     else if (currentRpsContext.type === 'boss'){
@@ -1064,7 +1264,7 @@ stairsAvailable = true;
       openDoorButton.style.display = 'none';
       proceedDeeperButton.style.display = 'none';
       exitDungeonButton.style.display = 'none';
-      setTimeout(() => { presentNewDoor(); }, 3000);
+      setTimeout(() => { presentNewDoor(); }, 4500);
       return;
     }
 
@@ -1210,6 +1410,7 @@ url.searchParams.set('from', fromName);
     // Reset level state for a brand-new run
     dungeonLevel = 1;
     lastDisplayedLevel = 1;
+    resetBossLevelOrder();
 
     playSound(sfx.click);
     playerClass = null;
