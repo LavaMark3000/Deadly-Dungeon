@@ -1,3 +1,117 @@
+// === Encounter flavor helpers ===
+const MONSTER_INTRO_TEMPLATES = [
+  (name) => `The ${name} appears! It's preparing its moves...`,
+  (name) => `A ${name} lunges from the shadows! Study its sequence...`,
+  (name) => `You face a ${name}! Watch its pattern carefully...`
+];
+
+const TRAP_INTRO_TEMPLATES = [
+  (name) => `You sense a ${name} ahead... memorise its pattern.`,
+  (name) => `A ${name} lies in wait! Watch each step closely...`,
+  (name) => `Careful! The ${name} is about to trigger. Learn its sequence...`
+];
+
+const MONSTER_VICTORY_LINES = {
+  warrior: [
+    "You cleave the {name} with a crushing blow!",
+    "Steel prevails! The {name} falls before your might.",
+    "Your shield holds and your strike drops the {name}."
+  ],
+  rogue: [
+    "You slip behind the {name} and end it with a precise strike.",
+    "The {name} never sees the dagger coming.",
+    "Shadows and steel – the {name} is no more."
+  ],
+  mage: [
+    "Your spell detonates and the {name} crumbles.",
+    "Arcane power overwhelms the {name}.",
+    "A final surge of magic unravels the {name}."
+  ],
+  default: [
+    "You defeat the {name} with practiced skill.",
+    "The {name} falls – another threat overcome.",
+    "Calm focus wins the day as the {name} goes down."
+  ]
+};
+
+const TRAP_VICTORY_LINES = {
+  warrior: [
+    "You brace yourself and smash the {name} mechanism apart.",
+    "With steady hands, you break the {name} before it triggers.",
+    "You muscle through the {name}, disabling it with brute force."
+  ],
+  rogue: [
+    "Swift fingers dance over the {name} and it clicks harmlessly open.",
+    "You grin as you pluck the {name} apart like a puzzle box.",
+    "A few deft moves and the {name} is completely disarmed."
+  ],
+  mage: [
+    "You trace a glyph and the magic in the {name} fizzles out.",
+    "Your senses pinpoint the {name}'s trigger and you unravel it.",
+    "A quiet spell unwinds the workings of the {name}."
+  ],
+  default: [
+    "You patiently dismantle the {name} without a scratch.",
+    "Careful work leaves the {name} in pieces at your feet.",
+    "You disarm the {name} with measured, precise movements."
+  ]
+};
+
+const BOSS_VICTORY_LINES = {
+  warrior: [
+    "You bring the final crushing blow – the boss collapses at your feet.",
+    "Steel sings as the boss falls before your unstoppable assault.",
+    "You stand over the fallen boss, armour smoking and victorious."
+  ],
+  rogue: [
+    "You slip through the chaos and land the decisive strike on the boss.",
+    "A perfectly timed attack drops the boss in stunned silence.",
+    "From the shadows, your final blow ends the boss's reign."
+  ],
+  mage: [
+    "A storm of magic erupts and the boss is consumed by your power.",
+    "Your final incantation tears through the boss's defences.",
+    "Arcane light flares – when it fades, the boss lies defeated."
+  ],
+  default: [
+    "With a final effort, you bring the boss crashing down.",
+    "The dungeon shudders as the boss is finally defeated.",
+    "You endure the last onslaught and the boss falls before you."
+  ]
+};
+
+function pickClassIdForFlavor(){
+  return (typeof playerClass !== 'undefined' && playerClass && playerClass.id) ? playerClass.id : 'default';
+}
+
+function pickRandomLine(lines){
+  if (!lines || !lines.length) return "";
+  return lines[Math.floor(Math.random() * lines.length)];
+}
+
+function buildMonsterVictoryText(opponentName, gold){
+  const cls = pickClassIdForFlavor();
+  const lines = MONSTER_VICTORY_LINES[cls] || MONSTER_VICTORY_LINES.default;
+  const flavor = pickRandomLine(lines).replace("{name}", opponentName);
+  return `${flavor} You find ${gold} gold.`;
+}
+
+function buildTrapVictoryText(opponentName, gold){
+  const cls = pickClassIdForFlavor();
+  const lines = TRAP_VICTORY_LINES[cls] || TRAP_VICTORY_LINES.default;
+  const flavor = pickRandomLine(lines).replace("{name}", opponentName);
+  return `${flavor} You recover ${gold} gold from the mechanism.`;
+}
+
+function buildBossVictoryText(opponentName, gold, multiplier){
+  const cls = pickClassIdForFlavor();
+  const lines = BOSS_VICTORY_LINES[cls] || BOSS_VICTORY_LINES.default;
+  const flavor = pickRandomLine(lines).replace("{name}", opponentName);
+  return `${flavor} You claim ${gold} gold! (Boss reward ×${multiplier})`;
+}
+
+// === End encounter flavor helpers ===
+
 document.addEventListener('DOMContentLoaded', () => {
   // Elements
   const startScreen = document.getElementById('start-screen');
@@ -707,9 +821,17 @@ function fadeOutAudio(audio, durationMs){
     keyHelp.style.display = 'inline-flex';
 
     if (type !== 'boss'){
-      encounterMessage.textContent = `The ${opp.name} appears! It's preparing its moves...`;
-      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 3000);
+      if (currentRpsContext.type === 'monster') {
+        const tmpl = MONSTER_INTRO_TEMPLATES[Math.floor(Math.random() * MONSTER_INTRO_TEMPLATES.length)];
+        encounterMessage.textContent = tmpl(opp.name);
+      } else if (currentRpsContext.type === 'trap') {
+        const tmpl = TRAP_INTRO_TEMPLATES[Math.floor(Math.random() * TRAP_INTRO_TEMPLATES.length)];
+        encounterMessage.textContent = tmpl(opp.name);
       } else {
+        encounterMessage.textContent = `The ${opp.name} appears! It's preparing its moves...`;
+      }
+      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 3000);
+    } else {
       // DELAYED BOSS INTRO
       setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 3000);
     }
@@ -772,7 +894,7 @@ function fadeOutAudio(audio, durationMs){
         currentRpsContext.playerCurrentSequenceStep++;
         if (currentRpsContext.playerCurrentSequenceStep === currentRpsContext.opponentActionSequence.length){
           const t = gainMonsterTreasure();
-          encounterMessage.innerHTML = `VICTORY! You perfectly countered the ${currentRpsContext.opponentData.name}! Found ${t} gold.`;
+          encounterMessage.innerHTML = buildMonsterVictoryText(currentRpsContext.opponentData.name, t);
 try{
         const encWrap = document.getElementById('encounter-graphic');
         if (encWrap){ encWrap.classList.remove('defeated'); encWrap.classList.add('defeated'); }
@@ -790,18 +912,18 @@ try{
         encounterMessage.innerHTML = `FAIL! You take ${currentRpsContext.opponentBaseDamage} damage.`;
         if (playerHealth <= 0) finalizeCombatSequence(false); else { setTimeout(() => restartCurrentCombat(), 3000); }
       }
-    } else if (currentRpsContext.type === 'trap') {
-  if (outcome === 'win') {
-    currentRpsContext.playerCurrentSequenceStep++;
-    if (currentRpsContext.playerCurrentSequenceStep === currentRpsContext.opponentActionSequence.length) {
-      playSound(sfx.trapDisarm);
-      const baseGold = Math.floor((Math.random()*(15 + currentDepth*3) + (10 + currentDepth)) * 0.35); // depth-scaled, small, random
-      currentTreasure += baseGold; playSound(sfx.treasure);
-      const msg = `CLEVER! You disarmed the ${currentRpsContext.opponentData.name} and recover ${baseGold} gold.`;
-      encounterMessage.innerHTML = msg; updatePlayerStats();
-      finalizeCombatSequence(true, {autoProceed:true});
-    } else {
-          encounterMessage.innerHTML = `Careful... Next step to disarm (${currentRpsContext.playerCurrentSequenceStep + 1}/${currentRpsContext.opponentActionSequence.length}).`;
+    } else if (currentRpsContext.type === 'trap'){
+      if (outcome === 'win'){
+        currentRpsContext.playerCurrentSequenceStep++;
+        if (currentRpsContext.playerCurrentSequenceStep === currentRpsContext.opponentActionSequence.length){
+          playSound(sfx.trapDisarm);
+          const baseGold = Math.floor((Math.random()*(15 + currentDepth*3) + (10 + currentDepth)) * 0.35);
+          currentTreasure += baseGold; playSound(sfx.treasure);
+          const msg = buildTrapVictoryText(currentRpsContext.opponentData.name, baseGold);
+          encounterMessage.innerHTML = msg; updatePlayerStats();
+          finalizeCombatSequence(true, {autoProceed:true});
+        } else {
+          encounterMessage.innerHTML = `Careful... Next step to go (${currentRpsContext.playerCurrentSequenceStep + 1}/${currentRpsContext.opponentActionSequence.length}).`;
           rpsButtons.forEach(btn => btn.disabled = false);
           markRpsReady(true);
         }
@@ -812,7 +934,8 @@ try{
         encounterMessage.innerHTML = `OOPS! The ${currentRpsContext.opponentData.name} triggers! You take ${currentRpsContext.opponentBaseDamage} damage.`;
         if (playerHealth <= 0){ finalizeCombatSequence(false); } else { finalizeCombatSequence(true, {autoProceed:true}); }
       }
-    } else if (currentRpsContext.type === 'boss'){
+    }
+    else if (currentRpsContext.type === 'boss'){
       if (outcome === 'win'){
         currentRpsContext.playerCurrentSequenceStep++;
         if (currentRpsContext.playerCurrentSequenceStep === currentRpsContext.opponentActionSequence.length){
@@ -821,7 +944,7 @@ try{
             playSound(sfx.playerWinRPS);
             const bossTreasure = gainMonsterTreasure(BOSS_REWARD_MULTIPLIER);
             playSound(sfx.treasure);
-            encounterMessage.innerHTML = `COLOSSAL VICTORY! You defeated the ${currentRpsContext.opponentData.name} and found ${bossTreasure} gold! (Boss reward ×${BOSS_REWARD_MULTIPLIER})`;
+            encounterMessage.innerHTML = buildBossVictoryText(currentRpsContext.opponentData.name, bossTreasure, BOSS_REWARD_MULTIPLIER);
             
             // Mage passive: full heal after boss victory
             if (playerClass && playerClass.id === 'mage') {
