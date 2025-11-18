@@ -170,40 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const RPS_FINAL_LINGER_MS = 200;const BORDER_COLORS = ['#FF6347','#32CD32','#1E90FF','#FFD700','#DA70D6'];
   const MAX_SEQUENCE_LENGTH = 8;
   const ROOMS_PER_LEVEL = 5;
-
-  // Flavor text pools for key encounter states
-  const DOOR_FLAVOR_LINES = [
-    "A mysterious door awaits...",
-    "A heavy door blocks your path.",
-    "Another dungeon door looms before you."
-  ];
-
-  const STAIRS_FLAVOR_LINES = [
-    "A stairway descends to the next level...",
-    "You spot stairs leading deeper into the dungeon...",
-    "A worn stone staircase twists down into darkness..."
-  ];
-
-  const TREASURE_FOUND_LINES = [
-    "You find a {name} worth {gold} gold.",
-    "You loot a {name} holding {gold} gold.",
-    "You discover a {name} containing {gold} gold."
-  ];
-
-
-
-  // Compute a suitable on-screen duration for a message based on its text length.
-  // Strips HTML tags like <br> so markup doesn't affect timing.
-  function readableDelayFor(messageText, opts = {}){
-    const defaults = { base: 2000, perChar: 45, min: 3000, max: 8000 };
-    const cfg = Object.assign({}, defaults, opts || {});
-    const plain = (messageText || '').replace(/<[^>]*>/g, '');
-    const len = plain.length;
-    const raw = cfg.base + len * cfg.perChar;
-    return Math.max(cfg.min, Math.min(cfg.max, raw));
-  }
-
-
   // boss is the 5th room (4 encounters before the boss)
   const BOSS_INTRO_DELAY_MS = 3000; // keep boss intro text visible before actions
   const BOSS_REWARD_MULTIPLIER = 3; // bosses drop more treasure
@@ -271,7 +237,6 @@ const CLASS_MAP = { w:'warrior', r:'rogue', m:'mage' };
 const BOSS_INTRO_LINES_BY_NAME = {
   "Minotaur": [
     "The {name} snorts and lowers its horns, ready to charge.",
-    "The {name} paws at the ground, eager to trample you.",
     "The {name} stamps the ground, each impact shaking the stone."
   ],
   "Orc Huntress": [
@@ -288,7 +253,6 @@ const BOSS_INTRO_LINES_BY_NAME = {
   ],
   "Beholder": [
     "The {name} floats into view, its many eyes fixing on you at once.",
-    "The {name} drifts closer, every eye watching your every move.",
     "A dozen eyes of the {name} flare with strange, alien light."
   ],
   "Hydra": [
@@ -316,7 +280,6 @@ const BOSS_INTRO_LINES_BY_NAME = {
 const BOSS_DEFEAT_LINES_BY_NAME = {
   "Minotaur": [
     "With a final roar, the {name} crashes to the dungeon floor.",
-    "The {name} finally falls, shaking the chamber as it hits the stone.",
     "The {name}'s horns gouge stone as it falls, defeated at last."
   ],
   "Orc Huntress": [
@@ -353,7 +316,6 @@ const BOSS_DEFEAT_LINES_BY_NAME = {
   ],
   "Abyssal Horror": [
     "The shape of the {name} unravels, melting back into the darkness.",
-    "The {name} loses its form entirely, fading into the shadows.",
     "Whispers fall silent as the {name} collapses into nothing."
   ]
 };
@@ -378,92 +340,76 @@ function getFlavorClassId(){
 const MONSTER_INTRO_LINES_BY_CLASS = {
   warrior: [
     "You raise your shield as the {name} closes in.",
-    "Steel rings as you prepare to meet the {name} head-on.",
-    "You step forward to meet the {name} without fear."
+    "Steel rings as you prepare to meet the {name} head-on."
   ],
   rogue: [
     "You slip into the shadows, studying the {name}'s movements.",
-    "Daggers ready, you circle the {name} for an opening.",
-    "You stalk the {name}, waiting for the perfect moment."
+    "Daggers ready, you circle the {name} for an opening."
   ],
   mage: [
     "Arcane energy hums at your fingertips as the {name} appears.",
-    "You begin to weave a spell as the {name} lurches into view.",
-    "You whisper an incantation as the {name} approaches."
+    "You begin to weave a spell as the {name} lurches into view."
   ],
   default: [
     "You steady yourself as the {name} appears from the darkness.",
-    "You ready yourself to face the {name}.",
-    "You take a steady breath and confront the {name}."
+    "You ready yourself to face the {name}."
   ]
 };
 
 const TRAP_INTRO_LINES_BY_CLASS = {
   warrior: [
     "You slow your pace, scanning the floor for hidden dangers.",
-    "Instinct tells you something is wrong with this section of corridor.",
-    "Your gut warns you that this stretch of corridor is dangerous."
+    "Instinct tells you something is wrong with this section of corridor."
   ],
   rogue: [
     "Your eyes catch the slightest disturbance—this place is trapped.",
-    "A faint glint and a loose stone tell you a trap lies ahead.",
-    "A scuffed flagstone and fine wire hint at a trap."
+    "A faint glint and a loose stone tell you a trap lies ahead."
   ],
   mage: [
     "You feel a prickling in the air—there is magic or mechanism at work here.",
-    "Your senses tingle as you detect the subtle pattern of a trap.",
-    "Your magic picks up the faint signature of a trap."
+    "Your senses tingle as you detect the subtle pattern of a trap."
   ],
   default: [
     "You notice something odd ahead—a trap waits for the careless.",
-    "You tread carefully; there is definitely a trap here.",
-    "You slow your steps, knowing a trap waits ahead."
+    "You tread carefully; there is definitely a trap here."
   ]
 };
 
 const MONSTER_VICTORY_LINES_BY_CLASS = {
   warrior: [
     "You cut the {name} down in a decisive strike and recover {gold} gold from its corpse.",
-    "With a powerful blow you fell the {name}, claiming {gold} gold from its remains.",
-    "You drive through the {name}\'s guard and claim {gold} gold from its corpse."
+    "With a powerful blow you fell the {name}, claiming {gold} gold from its remains."
   ],
   rogue: [
     "You outmaneuver the {name}, striking from the shadows and looting {gold} gold.",
-    "The {name} never sees the final strike coming; you lighten it of {gold} gold.",
-    "One precise strike ends the {name}; you pocket {gold} gold."
+    "The {name} never sees the final strike coming; you lighten it of {gold} gold."
   ],
   mage: [
     "Your spell unravels the {name}, leaving behind {gold} gold among the ash.",
-    "Arcane force smashes the {name} apart; you gather {gold} gold from the battlefield.",
-    "Your magic tears the {name} down; you collect {gold} gold."
+    "Arcane force smashes the {name} apart; you gather {gold} gold from the battlefield."
   ],
   default: [
     "You defeat the {name} and recover {gold} gold.",
-    "The {name} falls, leaving behind {gold} gold for you to collect.",
-    "The {name} collapses, and you recover {gold} gold from the scene."
+    "The {name} falls, leaving behind {gold} gold for you to collect."
   ]
 };
 
 const TRAP_VICTORY_LINES_BY_CLASS = {
   warrior: [
     "You brace yourself and carefully disable the {name}, salvaging {gold} gold from its parts.",
-    "With patience and muscle, you render the {name} harmless and pocket {gold} gold.",
-    "You strain against the {name} until it is safe, then claim {gold} gold."
+    "With patience and muscle, you render the {name} harmless and pocket {gold} gold."
   ],
   rogue: [
     "Nimble hands dance across the {name}, disarming it and claiming {gold} gold in hidden compartments.",
-    "You deftly disarm the {name}, smiling as you uncover {gold} gold tucked away inside.",
-    "You flick your tools through the {name} and reveal {gold} gold."
+    "You deftly disarm the {name}, smiling as you uncover {gold} gold tucked away inside."
   ],
   mage: [
     "You disrupt the workings of the {name} with a precise gesture, recovering {gold} gold from its mechanism.",
-    "A focused spell unravels the {name}, and you extract {gold} gold from what remains.",
-    "Your spell collapses the {name}; you draw out {gold} gold."
+    "A focused spell unravels the {name}, and you extract {gold} gold from what remains."
   ],
   default: [
     "You carefully disarm the {name} and recover {gold} gold from its mechanism.",
-    "With care and focus, you disable the {name}, earning {gold} gold for your trouble.",
-    "You take your time with the {name}, and it rewards you with {gold} gold."
+    "With care and focus, you disable the {name}, earning {gold} gold for your trouble."
   ]
 };
 
@@ -525,10 +471,11 @@ function buildBossIntroText(opponentName){
   } else {
     base = pickRandomLine(baseLines).replace("{name}", opponentName);
   }
-  // Shorter boss intro: keep a single strong line for mobile
-  return base;
+  const cls = getFlavorClassId();
+  const classTailLines = BOSS_INTRO_CLASS_LINES[cls] || BOSS_INTRO_CLASS_LINES.default;
+  const tail = pickRandomLine(classTailLines);
+  return `${base} ${tail}`;
 }
-
 
 function buildMonsterVictoryText(opponentName, gold){
   const cls = getFlavorClassId();
@@ -550,9 +497,12 @@ function buildBossVictoryText(opponentName, gold, multiplier){
   } else {
     flavor = `You bring down ${opponentName} in a hard-fought battle.`;
   }
-  // Shorter victory line for bosses on mobile
-  return `${flavor} You gain ${gold} gold (×${multiplier} boss reward).`;
+  const cls = getFlavorClassId();
+  const classTailLines = BOSS_VICTORY_CLASS_LINES[cls] || BOSS_VICTORY_CLASS_LINES.default;
+  const tail = pickRandomLine(classTailLines);
+  return `${flavor} ${tail} You claim ${gold} gold! (Boss reward ×${multiplier})`;
 }
+
 // Each level: boss {name, cls}, monsters: [{name, image, cls}]
 const LEVEL_CONFIG = {
   1: {
@@ -891,7 +841,7 @@ if (!playerClass){ document.getElementById('class-description').textContent = "P
     try{document.getElementById('encounter-graphic').classList.remove('defeated');}catch(_e){}
 
     encounterGraphic.innerHTML = `<img src="${stairsAvailable ? STATIC_IMAGES.stairs : STATIC_IMAGES.door}" alt="${stairsAvailable ? 'Stairs' : 'Mysterious Door'}" class="encounter-image">`;
-    encounterMessage.textContent = stairsAvailable ? pickRandomLine(STAIRS_FLAVOR_LINES) : pickRandomLine(DOOR_FLAVOR_LINES);
+    encounterMessage.textContent = stairsAvailable ? "A stairway descends to the next level..." : "A mysterious door awaits...";
     openDoorButton.textContent = stairsAvailable ? "Take Stairs" : "Open Door";
     openDoorButton.style.display = 'inline-block';
     proceedDeeperButton.style.display = 'none';
@@ -942,7 +892,7 @@ if (!playerClass){ document.getElementById('class-description').textContent = "P
   function handleOpenDoor(){
     playSound(sfx.click);
     if (stairsAvailable){
-  // Take stairs: pause briefly before moving to the next level start
+  // Take stairs: pause for 2.4s before moving to the next level start
   playSound(sfx.stairs);
   // brief UI lock + message
   openDoorButton.disabled = true;
@@ -950,15 +900,13 @@ if (!playerClass){ document.getElementById('class-description').textContent = "P
   exitDungeonButton.style.display = 'none';
   encounterMessage.textContent = "You descend the stairs...";
 
-  const stairsDelay = readableDelayFor(encounterMessage.textContent, { base: 1800, perChar: 40, min: 3000, max: 6000 });
-
   setTimeout(() => {
     stairsAvailable = false;
     dungeonLevel += 1;
     presentNewDoor();
     updateLevelBanner();
     openDoorButton.disabled = false;
-  }, stairsDelay);
+  }, 3000);
 
   return;
 }
@@ -1071,70 +1019,19 @@ if (!playerClass){ document.getElementById('class-description').textContent = "P
     keyHelp.style.display = 'inline-flex';
 
     if (type === 'monster'){
-      const intro = buildMonsterIntroText(opp.name);
-      encounterMessage.textContent = intro;
-      const delay = readableDelayFor(intro, { base: 2000, perChar: 40, min: 3200, max: 7500 });
-      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, delay);
+      encounterMessage.textContent = buildMonsterIntroText(opp.name);
+      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 4500);
     } else if (type === 'trap'){
-      const intro = buildTrapIntroText(opp.name);
-      encounterMessage.textContent = intro;
-      const delay = readableDelayFor(intro, { base: 2000, perChar: 40, min: 3200, max: 7500 });
-      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, delay);
+      encounterMessage.textContent = buildTrapIntroText(opp.name);
+      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 4500);
     } else {
       // Themed boss intro with class flavor
-      const intro = buildBossIntroText(opp.name);
-      encounterMessage.textContent = intro;
-      const delay = readableDelayFor(intro, { base: 2500, perChar: 50, min: 4000, max: 9000 });
-      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, delay);
+      encounterMessage.textContent = buildBossIntroText(opp.name);
+      setTimeout(() => { if (currentRpsContext.active) displayOpponentAction(); }, 4500);
     }
   }
 
-    function formatMonsterSuccess(step, total){
-    const lines = [
-      `Nice counter! Next move (${step + 1}/${total}).`,
-      `Good block! Next move (${step + 1}/${total}).`,
-      `Well played! Next move (${step + 1}/${total}).`
-    ];
-    return pickRandomLine(lines);
-  }
-
-  function formatTrapSuccess(step, total){
-    const lines = [
-      `Trap avoided. Next step (${step + 1}/${total}).`,
-      `Still safe. Next step (${step + 1}/${total}).`,
-      `Careful... next step (${step + 1}/${total}).`
-    ];
-    return pickRandomLine(lines);
-  }
-
-  function formatBossMidSuccess(step, total){
-    const lines = [
-      `Good hit! Next move (${step + 1}/${total}).`,
-      `You press the attack! Next move (${step + 1}/${total}).`,
-      `You land a blow! Next move (${step + 1}/${total}).`
-    ];
-    return pickRandomLine(lines);
-  }
-
-  function formatMonsterFail(damage){
-    const lines = [
-      `FAIL! You take ${damage} damage.`,
-      `You get hit and lose ${damage} health.`,
-      `${damage} damage! That one hurts.`
-    ];
-    return pickRandomLine(lines);
-  }
-
-  function formatTrapFail(name, damage){
-    const lines = [
-      `OOPS! The ${name} triggers! You take ${damage} damage.`,
-      `The ${name} goes off! You suffer ${damage} damage.`,
-      `${name} triggers! You take ${damage} damage.`
-    ];
-    return pickRandomLine(lines);
-  }
-
-function displayOpponentAction(){
+  function displayOpponentAction(){
     if (currentRpsContext.opponentSequenceDisplayInterval){
       clearInterval(currentRpsContext.opponentSequenceDisplayInterval);
     }
@@ -1230,7 +1127,7 @@ try{
         playSound(sfx.trapTrigger);
         playSound(sfx.playerHit);
         takeDamage(currentRpsContext.opponentBaseDamage);
-        encounterMessage.innerHTML = formatTrapFail(currentRpsContext.opponentData.name, currentRpsContext.opponentBaseDamage);
+        encounterMessage.innerHTML = `OOPS! The ${currentRpsContext.opponentData.name} triggers! You take ${currentRpsContext.opponentBaseDamage} damage.`;
         if (playerHealth <= 0){ 
           finalizeCombatSequence(false); 
         } else { 
@@ -1243,16 +1140,7 @@ try{
         currentRpsContext.playerCurrentSequenceStep++;
         if (currentRpsContext.playerCurrentSequenceStep === currentRpsContext.opponentActionSequence.length){
           currentRpsContext.bossCurrentStreak = (currentRpsContext.bossCurrentStreak || 0) + 1;
-            function formatBossStagger(name, current, required){
-    const lines = [
-      `You stagger the ${name}! Defeats: ${current}/${required}. Prepare for the next assault...`,
-      `The ${name} reels! Defeats: ${current}/${required}. Ready yourself for the next clash...`,
-      `You drive the ${name} back! Defeats: ${current}/${required}. The battle isn’t over yet...`
-    ];
-    return pickRandomLine(lines);
-  }
-
-if (currentRpsContext.bossCurrentStreak >= currentRpsContext.bossRequiredStreak){
+          if (currentRpsContext.bossCurrentStreak >= currentRpsContext.bossRequiredStreak){
             playSound(sfx.playerWinRPS);
             const bossTreasure = gainMonsterTreasure(BOSS_REWARD_MULTIPLIER);
             playSound(sfx.treasure);
@@ -1294,15 +1182,14 @@ stairsAvailable = true;
             }, 1000);
           } else {
             playSound(sfx.playerWinRPS);
-            encounterMessage.innerHTML = formatBossStagger(currentRpsContext.opponentData.name, currentRpsContext.bossCurrentStreak, currentRpsContext.bossRequiredStreak);
+            encounterMessage.innerHTML = `You stagger the ${currentRpsContext.opponentData.name}! Defeats: ${currentRpsContext.bossCurrentStreak}/${currentRpsContext.bossRequiredStreak}. Prepare for the next assault...`;
             setTimeout(() => {
               const level = getDungeonLevel();
               const seqLen = Math.min(level, MAX_SEQUENCE_LENGTH);
               currentRpsContext.opponentActionSequence = Array.from({length: seqLen}, () => ['rock','paper','scissors'][Math.floor(Math.random()*3)]);
               currentRpsContext.playerCurrentSequenceStep = 0;
-              // Fixed delay so boss stagger text is readable but doesn't hang
               restartCurrentCombat();
-            }, 4200);
+            }, 1200);
           }
         } else {
           encounterMessage.innerHTML = `Good hit! Next move (${currentRpsContext.playerCurrentSequenceStep + 1}/${currentRpsContext.opponentActionSequence.length}).`;
@@ -1377,11 +1264,7 @@ stairsAvailable = true;
       openDoorButton.style.display = 'none';
       proceedDeeperButton.style.display = 'none';
       exitDungeonButton.style.display = 'none';
-
-      const autoMsg = encounterMessage ? (encounterMessage.textContent || encounterMessage.innerHTML || '') : '';
-      const autoDelay = readableDelayFor(autoMsg, { base: 2000, perChar: 35, min: 3500, max: 7000 });
-
-      setTimeout(() => { presentNewDoor(); }, autoDelay);
+      setTimeout(() => { presentNewDoor(); }, 4500);
       return;
     }
 
@@ -1432,13 +1315,13 @@ stairsAvailable = true;
     if (isSafeExit){
       finalScore = currentTreasure;
       titleEl.textContent = "You Escaped";
-      msgEl.innerHTML = `You escaped Level ${dungeonLevel} after ${currentDepth} rooms with ${currentTreasure} gold.<br>Final score: ${finalScore}.`;
+      msgEl.innerHTML = `You bravely exited <strong>Dungeon Level ${dungeonLevel}</strong> after ${currentDepth} rooms with ${currentTreasure} gold!<br>Your final score is ${finalScore}.`;
       gameOverGraphic.innerHTML = `<img src="${STATIC_IMAGES.gameOverEscaped}" alt="Escaped Safely!" class="game-over-image">`;
     } else {
       finalScore = 0;
       const goldLost = currentTreasure;
       titleEl.textContent = "You Have Perished!";
-      msgEl.innerHTML = `You fell after ${currentDepth} rooms on Level ${dungeonLevel}.<br>You lost ${goldLost} gold. Final score: ${finalScore}.`;
+      msgEl.innerHTML = `Your adventure in the Deadly Dungeon ended in defeat after ${currentDepth} rooms.<br>You lost ${goldLost} gold.<br>Your final score is ${finalScore}.`;
       gameOverGraphic.innerHTML = `<img src="${STATIC_IMAGES.gameOverPerished}" alt="Player Perished" class="game-over-image">`;
     }
 
@@ -1489,22 +1372,12 @@ url.searchParams.set('from', fromName);
 
       await navigator.clipboard.writeText(url.toString());
       if (copyLinkFeedbackMessageEl){
-        const successLines = [
-          "Challenge link copied! Share it with a friend.",
-          "Link copied! Send it to someone brave enough.",
-          "Done! Your challenge link is ready to share."
-        ];
-        copyLinkFeedbackMessageEl.textContent = pickRandomLine(successLines);
+        copyLinkFeedbackMessageEl.textContent = "Challenge link copied! Share it with a friend.";
         copyLinkFeedbackMessageEl.style.display = 'block';
       }
     } catch(e){
       if (copyLinkFeedbackMessageEl){
-        const failLines = [
-          "Couldn't copy automatically. Try again.",
-          "Copy failed. You may need to paste manually.",
-          "That didn't copy. Try once more."
-        ];
-        copyLinkFeedbackMessageEl.textContent = pickRandomLine(failLines);
+        copyLinkFeedbackMessageEl.textContent = "Couldn't copy automatically. Try again.";
         copyLinkFeedbackMessageEl.style.display = 'block';
       }
     }
