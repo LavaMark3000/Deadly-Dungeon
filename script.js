@@ -1265,20 +1265,27 @@ if (currentRpsContext.bossCurrentStreak >= currentRpsContext.bossRequiredStreak)
               try { encounterMessage.innerHTML += " Your magic restores your full health!"; } catch (_e) {}
             }
             // No reset for total-wins mode
-            // After boss: show stairs state
+            // After boss: show stairs state, but keep victory text visible
             try{
               const encWrap = document.getElementById('encounter-graphic');
-              if (encWrap) encWrap.classList.remove('defeated');
-                encWrap.classList.add('defeated');
-            }catch(_e){}
-            setTimeout(() => {
-              try{
-              const encWrap = document.getElementById('encounter-graphic');
               if (encWrap){
-                encWrap.classList.remove('defeated'); // ensure no red cross
+                encWrap.classList.remove('defeated');
                 encWrap.classList.add('defeated'); // show gold cross
               }
             }catch(_e){}
+
+            // Compute a readable delay based on the full boss victory message
+            let bossVictoryDelay = 4500;
+            try{
+              const victoryMsg = encounterMessage ? (encounterMessage.textContent || encounterMessage.innerHTML || '') : '';
+              bossVictoryDelay = readableDelayFor(victoryMsg, {
+                base: 2500,
+                perChar: 40,
+                min: 4000,
+                max: 8000
+              });
+            }catch(_e){}
+
             setTimeout(() => {
               try{
                 const encWrap = document.getElementById('encounter-graphic');
@@ -1287,11 +1294,14 @@ if (currentRpsContext.bossCurrentStreak >= currentRpsContext.bossRequiredStreak)
                 }
               }catch(_e){}
               /* If level 10 boss beaten, trigger escape end */
-if (getDungeonLevel() >= 10) { finalizeCombatSequence(true, {}); setTimeout(() => endGame(true), 1200); return; }
-stairsAvailable = true;
+              if (getDungeonLevel() >= 10) {
+                finalizeCombatSequence(true, {});
+                setTimeout(() => endGame(true), 1200);
+                return;
+              }
+              stairsAvailable = true;
               finalizeCombatSequence(true, {showStairs:true});
-            }, 2000);
-            }, 1000);
+            }, bossVictoryDelay);
           } else {
             playSound(sfx.playerWinRPS);
             encounterMessage.innerHTML = formatBossStagger(currentRpsContext.opponentData.name, currentRpsContext.bossCurrentStreak, currentRpsContext.bossRequiredStreak);
