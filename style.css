@@ -110,8 +110,7 @@ input[type="text"], input[type="email"]{
 
 #encounter-message{
   font-size: clamp(1rem, 2vw, 1.1rem); font-style:italic; color:#ffeb3b;
-  /* Increased to reserve room for multi-line messages on mobile without moving the bottom dock */
-  min-height: clamp(96px, 18vw, 132px);
+  min-height: clamp(54px, 10vw, 76px);
   width: 92%; max-width: 520px;
   padding:.5rem; border:1px solid var(--muted); border-radius:8px; background:#1f1f30;
   display:flex; align-items:center; justify-content:center;

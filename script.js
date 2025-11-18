@@ -882,7 +882,7 @@ if (!playerClass){ document.getElementById('class-description').textContent = "P
     updateLevelBanner();
     presentNewDoor();
     try{ if (musicBoss) stopMusic(musicBoss); }catch(_e){}
-    if (musicDungeon) { musicDungeon.volume = 0.3; playSound(musicDungeon); }
+    if (musicDungeon) { musicDungeon.volume = 0.8; playSound(musicDungeon); }
     switchScreen(gameScreen);
     showActionButtons();
   }
@@ -1393,7 +1393,7 @@ stairsAvailable = true;
       if (opts.showStairs){
       /*__BOSS_MUSIC_END_ON_STAIRS__*/
       try{ if (musicBoss) fadeOutAudio(musicBoss, 1000); }catch(_e){}
-      try{ setTimeout(() => { if (musicDungeon){ musicDungeon.volume = 0.3; const _p = musicDungeon.play(); if (_p) _p.catch(()=>{}); } }, 3000); }catch(_e){}
+      try{ setTimeout(() => { if (musicDungeon){ musicDungeon.volume = 0.8; const _p = musicDungeon.play(); if (_p) _p.catch(()=>{}); } }, 3000); }catch(_e){}
       /*__BOSS_MUSIC_END_ON_STAIRS_END__*/
         proceedDeeperButton.style.display = 'none';
         exitDungeonButton.style.display = 'inline-block';
